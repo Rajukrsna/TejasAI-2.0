@@ -7,6 +7,7 @@ import { FaTrophy } from "react-icons/fa";
 import { SignedIn, UserButton, useAuth, useUser } from "@clerk/nextjs";
 import { IoMenu } from "react-icons/io5";
 import { useState } from "react";
+import { MdOutlineEventAvailable } from "react-icons/md";
 
 export default function NavBar() {
   const { userId } = useAuth();
@@ -62,6 +63,14 @@ export default function NavBar() {
               <div className="flex items-center hover:text-yellow-200 px-2 py-2 border border-transparent hover:border-yellow-500 hover:bg-yellow-100 hover:bg-opacity-30 transition-all duration-300">
                 <FaTrophy className="text-white mr-[7px]" />
                 <p className="text-white text-xl">Leaderboard</p>
+              </div>
+            </Link>
+          </li>
+          <li>
+            <Link href="/contestHome">
+              <div className="flex items-center hover:text-yellow-200 px-2 py-2 border border-transparent hover:border-yellow-500 hover:bg-yellow-100 hover:bg-opacity-30 transition-all duration-300">
+                <MdOutlineEventAvailable className="text-white mr-[7px]" />
+                <p className="text-white text-xl">Contest</p>
               </div>
             </Link>
           </li>
