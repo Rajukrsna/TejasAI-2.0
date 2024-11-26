@@ -1,5 +1,5 @@
 "use server";
-import User from "@/models/schema";
+import User from "@/models/User/Schema";
 import { connectToDb } from "../connectToDb";
 
 export const createUser = async (user) => {
