@@ -139,7 +139,7 @@ const Dashboard = () => {
             {/* Emission Data */}
             <div className="text-center text-white font-bold text-xl mb-4">
               <p className="text-black">
-                You've emitted {co2Emitted} kg of CO₂ out of your maximum
+                You&apos;ve emitted {co2Emitted} kg of CO₂ out of your maximum
                 allowed {maxCo2Footprint} kg.
               </p>
             </div>
