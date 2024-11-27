@@ -1,19 +1,36 @@
-// routes/leaderboardRoutes.js
-const express = require('express');
-const User = require('../models/User');
-const authenticateToken = require('../middlewares/auth');
+import { connectToDb } from '@/libs/connectToDb';
+import User from '@/models/User/Schema';
+import { auth } from '@clerk/nextjs';
 
-const router = express.Router();
-
-router.get('/', authenticateToken ,async (req, res) => {
+export async function GET(req) {
     try {
-     
-        const users = await User.find().sort({ points: -1 }).limit(10).select('username points');
-        const user = await User.findById(req.user.userId);
-        res.render('leaderboard', { user :user,users });
-    } catch (err) {
-        res.status(500).send('Error fetching leaderboard');
-    }
-});
+        await connectToDb(); // Ensure the database is connected
 
-module.exports = router;
+        const userId  = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
+        if (!userId) {
+            return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+        }
+
+        // Fetch the top 10 users based on points
+        const users = await User.find().sort({ points: -1 }).limit(10).select('username points');
+
+        // Fetch the current user's data
+        const currentUser = await User.findOne({ clerkId: userId }).select('username points'); // Assuming `clerkId` is stored in the User model
+
+        if (!currentUser) {
+            return new Response(JSON.stringify({ error: 'User not found' }), { status: 404 });
+        }
+
+        // Return leaderboard data
+        return new Response(
+            JSON.stringify({
+                users,
+                currentUser,
+            }),
+            { status: 200 }
+        );
+    } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+        return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 });
+    }
+}

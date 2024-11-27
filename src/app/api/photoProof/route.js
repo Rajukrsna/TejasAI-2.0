@@ -1,232 +1,266 @@
-const express = require('express');
-const router = express.Router();
-const multer = require('multer');
-const path = require('path');
-const authenticateToken = require('../middlewares/auth');
-const axios = require('axios');
-const fs = require('fs');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
-const s3Client = new S3Client();
-const dotenv = require('dotenv');
-const User = require('../models/User');
-const Activity = require('../models/Activity');
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import axios from "axios";
+import fs from "fs";
+import os from "os";
+import path from "path";
+import User from "@/models/User/Schema";
+import Activity from "@/models/Activity/Schema";
+import { connectToDb } from "@/libs/connectToDb";
 
-dotenv.config();
-// Define categories and their sub-categories
+// Initialize S3 Client
+const s3 = new S3Client({
+  region: "us-east-1",
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
+
 const categories = {
-    "recycled plastic": ["recycling symbol", "plastic", "recyclable material", "plastic waste","tub","tin"],
-    "used bicycle": [
-        "pre-owned bicycle",
-        "second-hand bike",
-        "recycled bicycle",
-        "bicycle",
-        "eco-friendly transport",
-        "sustainable cycling",
-        "bike sharing",
-        "refurbished cycle",
-        "green commuting",
-        "low-carbon transport",
-        "bicycle reuse"
-    ],
-    "ate veg full day": [
-        "vegetarian diet",
-        "plant-based meal",
-        "meatless day",
-        "vegan diet",
-        "sustainable eating",
-        "low-carbon food",
-        "ethical eating",
-        "green meals",
-        "meat-free meals",
-        "plant-forward eating"
-    ],
-    "carpooling": [
-        "ride sharing",
-        "shared commute",
-        "car-sharing service",
-        "eco-friendly travel",
-        "reduced emissions",
-        "green transportation",
-        "fuel-saving commute",
-        "low-carbon travel",
-        "group travel",
-        "sustainable transport"
-    ],
-    "zero waste shopping": [
-        "plastic-free shopping",
-        "bulk buying",
-        "reuse containers",
-        "eco-friendly shopping",
-        "sustainable shopping",
-        "minimal waste purchase",
-        "recyclable packaging",
-        "refill station",
-        "waste-free groceries",
-        "low-waste products"
-    ],
-    "planted tree": [
-        "tree plantation",
-        "reforestation",
-        "forest restoration",
-        "tree sapling",
-         "gardening",
-         "garden",
-         "Nature",
-        "eco-friendly activity",
-        "carbon offset",
-        "environmental conservation",
-        "green initiative",
-        "native tree planting",
-        "afforestation effort"
-    ],
-    "switch to LED bulbs": [
-        "energy-efficient lighting",
-        "LED replacement",
-        "low-energy bulbs",
-        "eco-friendly lights",
-        "sustainable lighting",
-        "green energy saving",
-        "carbon footprint reduction",
-        "long-lasting bulbs",
-        "LED retrofit",
-        "energy-saving solutions"
-    ],
-    "plastic-free packaging": [
-        "biodegradable packaging",
-        "compostable packaging",
-        "recyclable materials",
-        "zero plastic wraps",
-        "Package Delivery",
-        " cardboard",
-        "box",
-        "disposable Cup",
-        "carton",
-        "eco-friendly packaging",
-        "sustainable packaging",
-        "waste-free packaging",
-        "natural materials",
-        "paper-based packaging",
-        "green product packaging"
-    ],
+  "recycled plastic": ["recycling symbol", "plastic", "recyclable material", "plastic waste","tub","tin"],
+  "used bicycle": [
+      "pre-owned bicycle",
+      "second-hand bike",
+      "recycled bicycle",
+      "bicycle",
+      "eco-friendly transport",
+      "sustainable cycling",
+      "bike sharing",
+      "refurbished cycle",
+      "green commuting",
+      "low-carbon transport",
+      "bicycle reuse"
+  ],
+  "ate veg full day": [
+      "vegetarian diet",
+      "plant-based meal",
+      "meatless day",
+      "vegan diet",
+      "sustainable eating",
+      "low-carbon food",
+      "ethical eating",
+      "green meals",
+      "meat-free meals",
+      "plant-forward eating"
+  ],
+  "carpooling": [
+      "ride sharing",
+      "shared commute",
+      "car-sharing service",
+      "eco-friendly travel",
+      "reduced emissions",
+      "green transportation",
+      "fuel-saving commute",
+      "low-carbon travel",
+      "group travel",
+      "sustainable transport"
+  ],
+  "zero waste shopping": [
+      "plastic-free shopping",
+      "bulk buying",
+      "reuse containers",
+      "eco-friendly shopping",
+      "sustainable shopping",
+      "minimal waste purchase",
+      "recyclable packaging",
+      "refill station",
+      "waste-free groceries",
+      "low-waste products"
+  ],
+  "planted tree": [
+      "tree plantation",
+      "reforestation",
+      "forest restoration",
+      "tree sapling",
+       "gardening",
+       "garden",
+       "Nature",
+      "eco-friendly activity",
+      "carbon offset",
+      "environmental conservation",
+      "green initiative",
+      "native tree planting",
+      "afforestation effort"
+  ],
+  "switch to LED bulbs": [
+      "energy-efficient lighting",
+      "LED replacement",
+      "low-energy bulbs",
+      "eco-friendly lights",
+      "sustainable lighting",
+      "green energy saving",
+      "carbon footprint reduction",
+      "long-lasting bulbs",
+      "LED retrofit",
+      "energy-saving solutions"
+  ],
+  "plastic-free packaging": [
+      "biodegradable packaging",
+      "compostable packaging",
+      "recyclable materials",
+      "zero plastic wraps",
+      "Package Delivery",
+      " cardboard",
+      "box",
+      "disposable Cup",
+      "carton",
+      "eco-friendly packaging",
+      "sustainable packaging",
+      "waste-free packaging",
+      "natural materials",
+      "paper-based packaging",
+      "green product packaging"
+  ],
 };
 
-
-// Set up AWS S3 client
-const s3 = new S3Client({
-  region: 'us-east-1', // replace with your S3 bucket region
-});
-
-const REKOG_API_URL = process.env.awsrec;
-
-// Configure Multer for file upload
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, './uploads'); // Path where the file should be stored
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Filename with timestamp
-  },
-});
-
-const upload = multer({ storage: storage });
-
-// Middleware to parse form data (userId, category, etc.) before file upload
-router.use(express.urlencoded({ extended: true })); // Ensure form data is parsed
-router.use(express.json()); // Optional, if you also expect JSON payloads
-
-router.post('/upload', authenticateToken, upload.single('image'), async (req, res) => {
-  if (req.fileValidationError) {
-    console.error('File validation error:', req.fileValidationError);
-    return res.status(400).send('File validation error');
-  }
-  
-  const { file, body } = req;
-  const { category } = body; // Extract userId and category from the body
- console.log(category);
- 
-  
-
+const REKOG_API_URL = process.env.awsrec; 
+export async function POST(req) {
   try {
-    const fileStream = fs.createReadStream(file.path);
-    const bucketName = 'recbuck';
-    const objectKey = file.originalname;
+    const payload = await req.json();
+    const imageUrl = payload.imagePreviewUrl;
+    const category = payload.category;
+    const fileName = payload.fileName;
 
-    const uploadParams = {
-      Bucket: bucketName, // replace with your S3 bucket name
-      Key: file.originalname, // unique key for the file in S3
-      Body: fileStream,
-      ContentType: file.mimetype, // optional: set the file's MIME type
-    };
+    if (!imageUrl || !category) {
+      return new Response(
+        JSON.stringify({ message: "Image URL and category are required" }),
+        { status: 400 }
+      );
+    }
 
-    // Upload file to S3 using PutObjectCommand
-    await s3.send(new PutObjectCommand(uploadParams));
+    // Fetch image from the URL
+    const response = await axios({
+      method: "get",
+      url: imageUrl,
+      responseType: "stream",
+    });
 
+    // Save the image to a temporary path
+    const tempDir = os.tmpdir();
+    const tempImagePath = path.join(
+      tempDir,
+      Date.now() + path.extname(imageUrl)
+    );
 
-    const labels = await analyzeImage(bucketName, objectKey);
+    const writer = fs.createWriteStream(tempImagePath);
+    response.data.pipe(writer);
 
-  console.log(labels);
-    // Ensure labels is an array
-    if (!Array.isArray(labels)) {
-        return res.status(500).json({ message: 'Error: Labels are not an array' });
-      }
- // Normalize the category input to lowercase
- const normalizedCategory = category.toLowerCase();
- if (!categories[normalizedCategory]) {
-  console.error(`Category "${normalizedCategory}" does not exist.`);
-  return res.status(400).json({ message: 'Invalid category provided' });
+    return new Promise((resolve, reject) => {
+      writer.on("finish", async () => {
+        try {
+          // Upload image to S3
+          const fileStream = fs.createReadStream(tempImagePath);
+          const bucketName = "recbuck";
+          const objectKey = path.basename(tempImagePath);
+          const uploadParams = {
+            Bucket: bucketName,
+            Key: objectKey,
+            Body: fileStream,
+            ContentType: response.headers["content-type"],
+          };
+
+          await s3.send(new PutObjectCommand(uploadParams));
+
+          // Analyze image (AWS Rekognition)
+          const labels = await analyzeImage(bucketName, objectKey);
+          console.log(labels);
+
+          if (!Array.isArray(labels)) {
+            return resolve(
+              new Response(
+                JSON.stringify({ message: "Error: Labels are not an array" }),
+                { status: 500 }
+              )
+            );
+          }
+
+          const normalizedCategory = category.toLowerCase();
+          console.log("here i am ", normalizedCategory)
+          if (!categories[normalizedCategory]) {
+            return resolve(
+              new Response(
+                JSON.stringify({ message: "Invalid category provided" }),
+                { status: 400 }
+              )
+            );
+          }
+
+          const matchedLabel = labels.some((label) => {
+          const normalizedLabelName = label.Name.toLowerCase();
+            return categories[normalizedCategory]?.includes(normalizedLabelName);
+          });
+
+          if (matchedLabel) {
+            await connectToDb();
+            const user = await User.findOne({ clerkId: "user_2pQbMG8GIQOhas0DonijxDCsi0T" });
+
+            user.points += 5; // Add points for correct match
+            await user.save();
+
+            const activity = await Activity.findOne({ clerkId:  "user_2pQbMG8GIQOhas0DonijxDCsi0T" });
+
+            if (activity) {
+              activity.reduction += 50; // Add reduction value
+              await activity.save();
+            } else {
+              const newActivity = new Activity({
+                clerkId: "user_2pQbMG8GIQOhas0DonijxDCsi0T",
+                suggestions: "New activity for this user",
+                co2: 0,
+                reduction: 100, // Initial reduction value
+                date: new Date(),
+              });
+
+              await newActivity.save();
+            }
+
+            return resolve(
+              new Response(
+                JSON.stringify({
+                  message: "Points awarded successfully!",
+                  imageUrl: `https://${bucketName}.s3.amazonaws.com/${objectKey}`,
+                  points: 5,
+                }),
+                { status: 200 }
+              )
+            );
+          } else {
+            return resolve(
+              new Response(
+                JSON.stringify({ message: "Wrong category, no points awarded." }),
+                { status: 400 }
+              )
+            );
+          }
+        } catch (uploadError) {
+          console.error("Error during upload or analysis:", uploadError);
+          return resolve(
+            new Response(JSON.stringify({ message: "Internal server error" }), {
+              status: 500,
+            })
+          );
+        }
+      });
+
+      writer.on("error", (error) => {
+        console.error("Error saving image:", error);
+        return resolve(
+          new Response(JSON.stringify({ message: "Error saving image" }), {
+            status: 500,
+          })
+        );
+      });
+    });
+  } catch (error) {
+    console.error("Error processing request:", error);
+    return new Response(JSON.stringify({ message: "Internal server error" }), {
+      status: 500,
+    });
+  }
 }
 
- // Check if any label matches a subcategory of the given category
-const matchedLabel = labels.some(label => {
-    const normalizedLabelName = label.Name.toLowerCase();
-    console.log(normalizedLabelName);
-    console.log(categories[normalizedCategory])
-    // Check if the label matches any subcategory of the given category
-    return categories[normalizedCategory]?.includes(normalizedLabelName);  });
 
-if (matchedLabel) {
-  
-  const user = await User.findById(req.user.userId);
-    user.points += 5; // Add 50 points
-    await user.save();
-
-
-  const activity = await Activity.findOne({ userId: req.user.userId });
-
-  if (activity) {
-      activity.reduction += 50;
-      await activity.save();
-      console.log("Activity reduction value updated successfully.");
-  } else {
-      const newActivity = new Activity({
-          userId: req.user.userId,
-          suggestions: "New activity for this user",
-          co2: 0, 
-          reduction: 100, 
-          date: new Date()
-      });
-  
-      await newActivity.save();
-      console.log("New activity created for the user.");
-  }
-
-    res.json({ message: 'Points awarded successfully!' });
-   
-  } else {
-    res.json({ message: 'Wrong category, no points awarded.' });
-  }
-
-   
-  } catch (error) {
-    console.error('Error processing image:', error);
-    res.status(500).json({ message: 'Internal server error' });
-  } finally {
-    fs.unlinkSync(file.path);
-  }
-});
-
-
-
+// Helper function to analyze the image using Rekognition API
 async function analyzeImage(bucketName, objectKey) {
   const response = await axios.post(
     REKOG_API_URL,
@@ -236,19 +270,19 @@ async function analyzeImage(bucketName, objectKey) {
     },
     {
       headers: {
-        'Content-Type': 'application/json', 
-        'Accept': 'application/json',
+        "Content-Type": "application/json",
+        Accept: "application/json",
       },
     }
   );
+
   let suggestions;
   if (response.data && response.data.body) {
-    const lambdaBody = JSON.parse(response.data.body); 
-    suggestions = lambdaBody.Labels || 'Unexpected response format from Lambda.';
+    const lambdaBody = JSON.parse(response.data.body);
+    suggestions =
+      lambdaBody.Labels || "Unexpected response format from Lambda.";
   } else {
-    suggestions = 'Unexpected response format from Lambda.';
+    suggestions = "Unexpected response format from Lambda.";
   }
   return suggestions;
 }
-
-module.exports = router;

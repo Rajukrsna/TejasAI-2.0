@@ -7,41 +7,32 @@ export async function GET(req) {
   try {
     await connectToDb();
     console.log("i am here");
-    // Authenticate and fetch user ID from Clerk
-    const { userId } = getAuth(req);
+    const userId  = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
     if (!userId) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
       });
     }
-
-    // Get user data from database
-    const userData = await User.findOne({ clerkUserId: userId });
+    const userData = await User.findOne({ clerkId: userId });
     if (!userData) {
       return new Response(JSON.stringify({ error: "User not found" }), {
         status: 404,
       });
     }
-
-    // Fetch activities for the authenticated user
     const activities = await Activity.find({ userId: userData._id });
 
     const maxCo2Footprint = 3000;
     const contribution = 10;
-
-    // Calculate CO2 data
     const co2Emitted = activities.reduce(
       (total, activity) => total + activity.co2,
       0
     );
     const co2Percentage = Math.min((co2Emitted / maxCo2Footprint) * 100, 100);
 
-    // Extract suggestions
     const suggestionsArray = activities
       .map((activity) => activity.suggestions)
       .filter((suggestion) => suggestion.trim() !== "");
 
-    // Return response
     return new Response(
       JSON.stringify({
         user: {
