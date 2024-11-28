@@ -7,7 +7,7 @@ export async function GET(req) {
   try {
     await connectToDb();
     const { userId } = getAuth(req);
-
+    console.log(userId);
     if (!userId) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }

@@ -44,7 +44,7 @@ export async function POST(req) {
   if (evt.type === "user.created") {
     console.log("userId:", evt.data.id);
 
-    const { id, email_addresses, username } = evt.data;
+    const { id, email_addresses, username, first_name } = evt.data;
 
     const user = {
       clerkId: id,

@@ -29,7 +29,7 @@ const Dashboard = () => {
           }
         }
       } catch (error) {
-        console.error("Error in checkData:", error);
+        console.log("Error in checkData:", error);
         toast.error("Failed to connect to the server");
       }
     };
