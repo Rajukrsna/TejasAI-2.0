@@ -1,11 +1,11 @@
-import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
 import Activity from "@/models/Activity/Schema";
 import { connectToDb } from "@/libs/connectToDb";
+import { getAuth } from "@clerk/nextjs/server";
 
-export async function GET() {
-  const userId = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
+export async function GET(req) {
+  // const userId = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
+  const { userId } = getAuth(req);
   await connectToDb();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

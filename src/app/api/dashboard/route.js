@@ -6,8 +6,9 @@ import { getAuth } from "@clerk/nextjs/server"; // Clerk authentication
 export async function GET(req) {
   try {
     await connectToDb();
-    console.log("i am here");
-    const userId  = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
+    const { userId } = getAuth(req);
+    // const userId  = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
+    console.log("from backend",userId);
     if (!userId) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,

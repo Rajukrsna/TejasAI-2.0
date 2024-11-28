@@ -6,6 +6,7 @@ import path from "path";
 import User from "@/models/User/Schema";
 import Activity from "@/models/Activity/Schema";
 import { connectToDb } from "@/libs/connectToDb";
+import { getAuth } from "@clerk/nextjs/server";
 
 // Initialize S3 Client
 const s3 = new S3Client({
@@ -115,6 +116,7 @@ const categories = {
 
 const REKOG_API_URL = process.env.awsrec; 
 export async function POST(req) {
+  const { userId } = getAuth(req);
   try {
     const payload = await req.json();
     const imageUrl = payload.imagePreviewUrl;
@@ -192,19 +194,19 @@ export async function POST(req) {
 
           if (matchedLabel) {
             await connectToDb();
-            const user = await User.findOne({ clerkId: "user_2pQbMG8GIQOhas0DonijxDCsi0T" });
+            const user = await User.findOne({ clerkId: userId });
 
             user.points += 5; // Add points for correct match
             await user.save();
 
-            const activity = await Activity.findOne({ clerkId:  "user_2pQbMG8GIQOhas0DonijxDCsi0T" });
+            const activity = await Activity.findOne({ clerkId:  userId });
 
             if (activity) {
               activity.reduction += 50; // Add reduction value
               await activity.save();
             } else {
               const newActivity = new Activity({
-                clerkId: "user_2pQbMG8GIQOhas0DonijxDCsi0T",
+                clerkId: userId,
                 suggestions: "New activity for this user",
                 co2: 0,
                 reduction: 100, // Initial reduction value

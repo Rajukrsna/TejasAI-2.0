@@ -4,16 +4,19 @@ import Link from "next/link";
 import { AiFillDashboard } from "react-icons/ai";
 import { FaHeartbeat } from "react-icons/fa";
 import { FaTrophy } from "react-icons/fa";
-import { SignedIn, UserButton, useAuth, useUser } from "@clerk/nextjs";
+import { UserButton, useAuth, useClerk, useUser } from "@clerk/nextjs";
 import { IoMenu } from "react-icons/io5";
 import { useState } from "react";
 import { MdOutlineEventAvailable } from "react-icons/md";
+import { MdOutlineLogout } from "react-icons/md";
 
 export default function NavBar() {
   const { userId } = useAuth();
   const { user } = useUser();
   const isSignedIn = userId ? true : false;
   const [openNav, setOpenNav] = useState(false);
+
+  const { signOut } = useClerk();
 
   return (
     <nav
@@ -31,7 +34,8 @@ export default function NavBar() {
         </h1>
       </div>
       <div className="md:hidden">
-        <IoMenu size={40}
+        <IoMenu
+          size={40}
           onClick={() => setOpenNav(!openNav)}
           className="text-white text-2xl border border-white p-[5px] rounded-md my-[3px]"
         />
@@ -76,9 +80,15 @@ export default function NavBar() {
           </li>
           <li>
             {isSignedIn ? (
-              <div className="flex items-center gap-[5px] hover:text-yellow-200 px-2 py-2 border border-transparent hover:border-yellow-500 hover:bg-yellow-100 hover:bg-opacity-30 transition-all duration-300">
-                <UserButton />
-                <p className="text-white">{user.username}</p>
+              <div className="flex items-center">
+                <button onClick={() => signOut({ redirectUrl: "/" })} className="flex items-center">
+                  <MdOutlineLogout className="text-white mr-[7px]" size={20}/>
+                  <p className="text-xl text-white">Logout</p>
+                </button>
+                <div className="flex items-center gap-[5px] hover:text-yellow-200 px-2 py-2 border border-transparent hover:border-yellow-500 hover:bg-yellow-100 hover:bg-opacity-30 transition-all duration-300">
+                  <UserButton signOutFallbackUrl="/sign-in" />
+                  {/* <p className="text-white">{user.username}</p> */}
+                </div>
               </div>
             ) : (
               <Link href="/sign-in">

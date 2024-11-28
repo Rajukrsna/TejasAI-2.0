@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs";
+import { getAuth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Activity from "@/models/Activity/Schema";
 import Daily from "@/models/Daily/Schema";
@@ -19,7 +19,7 @@ const LAMBDA_API_URL = process.env.URILAMA;
 // }
 
 export async function POST(req) {
-  const userId = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
+  const { userId } = getAuth(req)
   await connectToDb();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

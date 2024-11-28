@@ -1,12 +1,12 @@
 import { connectToDb } from '@/libs/connectToDb';
 import User from '@/models/User/Schema';
-import { auth } from '@clerk/nextjs';
+import { getAuth } from "@clerk/nextjs/server";
 
 export async function GET(req) {
     try {
         await connectToDb(); // Ensure the database is connected
-
-        const userId  = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
+        const { userId } = getAuth(req);
+        // const userId  = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
         if (!userId) {
             return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
         }
