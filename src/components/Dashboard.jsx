@@ -1,24 +1,17 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 import axios from "axios";
 
 const Dashboard = () => {
-  // const username = "John Doe";
-  // const points = 75;
-  // const co2Emitted = 120;
-  // const maxCo2Footprint = 200;
-  // const contribution = Math.floor((co2Emitted / maxCo2Footprint) * 100);
-  // const suggestions = [
-  //   "Switch to energy-efficient appliances",
-  //   "Carpool or use public transportation",
-  //   "Recycle and compost whenever possible",
-  // ];
-  // const co2Percentage = contribution;
-
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const activityChartRef = useRef(null);
+  const categoryChartRef = useRef(null);
+  const activityChartInstance = useRef(null); // To store activity chart instance
+  const categoryChartInstance = useRef(null); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,36 +24,139 @@ const Dashboard = () => {
         setIsLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
   useEffect(() => {
-    if (userData && userData.co2Emitted && userData.maxCo2Footprint) {
-      const ctx = document.getElementById("myPieChart").getContext("2d");
-      new Chart(ctx, {
-        type: "doughnut",
-        data: {
-          labels: ["CO₂ Emitted", "Remaining Footprint"],
-          datasets: [
-            {
-              data: [
-                userData.co2Emitted,
-                userData.maxCo2Footprint - userData.co2Emitted,
+    async function renderCategoryBreakdown() {
+      if (!categoryChartRef.current) {
+        console.log("Category Chart Canvas Ref not ready yet");
+        return;
+      }
+      try {
+        const response = await axios.get(
+          "/api/log_activity/category_breakdown/"
+        );
+        const data = await response.data;
+        const labels = data.map((item) => item._id); // Extract labels: ['Emission', 'Reduction']
+        const values = data.map((item) => item.totalCo2);
+
+        if (categoryChartInstance.current) {
+          categoryChartInstance.current.destroy();
+        }
+
+        const canvas = categoryChartRef.current;
+        if (canvas) {
+          const ctx = canvas.getContext("2d");
+          categoryChartInstance.current = new Chart(ctx, {
+            type: "pie",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  data: values,
+                  backgroundColor: ["#FF6384", "#36A2EB"], // Colors for categories
+                  hoverOffset: 4,
+                },
               ],
-              backgroundColor: ["#FF6B6B", "#4CAF50"],
             },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: true, position: "top" },
-          },
-        },
-      });
+            options: {
+              plugins: {
+                legend: {
+                  position: "top",
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function (tooltipItem) {
+                      const value = tooltipItem.raw;
+                      return `${tooltipItem.label}: ${value.toFixed(2)} kg CO2`;
+                    },
+                  },
+                },
+              },
+            },
+          });
+        } else {
+          console.log("not found category");
+        }
+      } catch (error) {
+        console.log("Error fetching category breakdown:", error);
+      }
     }
-  }, [userData]);
+
+    async function renderActivityBreakdown() {
+      
+      try {
+        const response = await axios.get(
+          "/api/log_activity/activity_breakdown/"
+        );
+        const data = await response.data;
+        const labels = data.categories.map((item) => item.label);
+        const values = data.categories.map((item) => item.value);
+        console.log("data is", labels);
+        console.log("valuue is", values);
+        if (activityChartInstance.current) {
+          activityChartInstance.current.destroy();
+        }
+
+        const canvas = activityChartRef.current;
+        if (canvas) {
+          const ctx = canvas.getContext("2d");
+          activityChartInstance.current = new Chart(ctx, {
+            type: "pie",
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  data: values,
+                  backgroundColor: [
+                    "#52b788", // Color for "Transportation"
+                    "#ffadad", // Color for "Energy"
+                    "#ffb84d", // Color for "Diet"
+                    "#ffd700", // Color for "Recycling"
+                    "#ff9999", // Color for "Travel"
+                  ], // Custom colors
+                  hoverOffset: 4, // Offset effect when hovering
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: "top",
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function (tooltipItem) {
+                      const value = tooltipItem.raw;
+                      return `${tooltipItem.label}: ${value.toFixed(2)} kg CO2`;
+                    },
+                  },
+                },
+              },
+            },
+          });
+        } else {
+          console.log("not found activity");
+        }
+      } catch (error) {
+        console.log("Error fetching activity breakdown:", error);
+      }
+    }
+    renderCategoryBreakdown();
+    renderActivityBreakdown();
+
+    return () => {
+      if (activityChartInstance.current) {
+        activityChartInstance.current.destroy();
+      }
+      if (categoryChartInstance.current) {
+        categoryChartInstance.current.destroy();
+      }
+    };
+  }, [categoryChartRef.current]);
+
   if (isLoading) return <div className="text-center py-10">Loading...</div>;
   if (!userData)
     return (
@@ -77,7 +173,7 @@ const Dashboard = () => {
   const contribution = Math.floor((co2Emitted / maxCo2Footprint) * 100);
 
   return (
-    <div className="bg-gray-100 min-h-screen py-10">
+    <div className=" min-h-screen">
       <div className="container mx-auto p-6 bg-white shadow-xl rounded-lg">
         <h2 className="text-2xl font-bold text-center text-green-700 mb-6">
           Welcome, {username}!
@@ -86,18 +182,18 @@ const Dashboard = () => {
         {/* First Row: Your Points, CO2 Activity Breakdown, CO2 Footprint */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           {/* Points Section */}
-          <div className="bg-gradient-to-r from-green-400 to-blue-500 text-white p-6 rounded-lg shadow-lg">
-            <h3 className="text-xl font-semibold text-center mb-4">
+          <div className="bg-gradient-to-r flex flex-col justify-center from-green-400 to-blue-500 text-white p-6 rounded-lg shadow-lg h-[500px]">
+            <h3 className="md:text-3xl text-xl font-semibold text-center mb-4">
               Your Points
             </h3>
             <div className="text-center mb-4">
               <img
                 src="https://i.ibb.co/s56NLRW/download.jpg"
                 alt="Points Icon"
-                className="w-24 mx-auto rounded-lg shadow-md"
+                className="md:w-40 w-28 mx-auto rounded-lg shadow-md"
               />
             </div>
-            <p className="text-4xl font-bold text-center text-black">
+            <p className="md:text-6xl text-4xl font-bold text-center text-black">
               {points}
             </p>
             <div className="w-full bg-gray-200 rounded-full h-3 mt-4">
@@ -106,29 +202,30 @@ const Dashboard = () => {
                 style={{ width: `${points}%` }}
               ></div>
             </div>
-            <p className="text-center mt-2 text-white text-sm">
+            <p className="text-center mt-2 text-white text-md">
               Your current points
             </p>
           </div>
 
           {/* CO₂ Activity Breakdown */}
-          <div className="bg-white p-6 rounded-lg shadow-lg">
+          <div className="bg-white p-6 rounded-lg shadow-lg h-[500px]">
             <h2 className="text-lg font-semibold text-center mb-4">
               CO₂ Activity Breakdown
             </h2>
-            <canvas id="myPieChart"></canvas>
+            {/* <canvas id="myPieChart"></canvas> */}
+            <canvas ref={activityChartRef} width="400" height="400"></canvas>
           </div>
 
           {/* CO₂ Footprint Section */}
-          <div className="bg-gradient-to-r from-green-500 to-red-400 text-white p-6 rounded-lg shadow-lg">
-            <h3 className="text-xl font-semibold text-center mb-4">
+          <div className="bg-gradient-to-r flex flex-col justify-center from-green-500 to-red-400 h-[500px] text-white p-6 rounded-lg shadow-lg">
+            <h3 className="md:text-3xl text-xl font-semibold text-center mb-4">
               CO₂ Footprint
             </h3>
             <div className="text-center mb-4">
               <img
                 src="https://img.icons8.com/ios-filled/50/ffffff/earth-planet.png"
                 alt="Earth Icon"
-                className="w-16 mx-auto"
+                className="md:w-40 w-20 mx-auto"
               />
             </div>
             <div className="text-base">
@@ -148,16 +245,16 @@ const Dashboard = () => {
                 style={{ width: `${contribution}%` }}
               ></div>
             </div>
-            <p className="text-center mt-2 text-white text-sm">
+            <p className="text-center mt-2 text-white text-md">
               Your contribution to the total CO₂ footprint among the users
             </p>
           </div>
         </div>
 
         {/* Second Row: Emission Level, Monthly CO₂ Chart, Suggestions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 h-[500px]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Emission Level Section */}
-          <div className="bg-gradient-to-br from-orange-600 to-orange-400 p-5 rounded-lg shadow-lg">
+          <div className="bg-gradient-to-br from-orange-600 to-orange-400 p-5 rounded-lg shadow-lg h-[550px]">
             <h3 className="text-white text-2xl font-semibold text-center mb-5">
               Your Emission Level
             </h3>
@@ -211,16 +308,17 @@ const Dashboard = () => {
             </p>
           </div>
 
-          {/* Monthly CO₂ Chart */}
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h3 className="text-lg font-semibold text-center mb-4">
-              Monthly CO₂ Footprint
-            </h3>
-            <canvas id="co2Chart" width="400" height="200"></canvas>
+          {/* activity breakdown  */}
+          <div className="bg-white p-5 rounded-lg shadow-lg h-[550px]">
+            <h2 className="text-lg font-semibold text-center mb-4">
+              Emission vs Reduction
+            </h2>
+            {/* <canvas id="myPieChart"></canvas> */}
+            <canvas ref={categoryChartRef} width="400" height="400"></canvas>
           </div>
 
           {/* Suggestions Section */}
-          <div className="mt-6 overflow-y-scroll p-[30px]">
+          <div className="overflow-y-scroll p-5 h-[550px]">
             <h3 className="text-xl font-semibold mb-4">Suggestions</h3>
             <div className="flex flex-col space-y-4">
               {suggestions.length > 0 ? (
@@ -244,121 +342,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
-// "use client";
-
-// import { useState, useEffect } from "react";
-// import axios from "axios"; // Import axios
-// import { Chart, registerables } from "chart.js";
-// Chart.register(...registerables);
-
-// const Dashboard = () => {
-//   const [userData, setUserData] = useState(null);
-//   const [isLoading, setIsLoading] = useState(true);
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       try {
-//         const response = await axios.get("http://localhost:3000/api/dashboard");
-//         setUserData(response.data);
-//       } catch (error) {
-//         console.error("Error fetching dashboard data:", error);
-//       } finally {
-//         setIsLoading(false);
-//       }
-//     };
-
-//     fetchData();
-//   }, []);
-
-//   useEffect(() => {
-//     if (userData && userData.co2Emitted && userData.maxCo2Footprint) {
-//       const ctx = document.getElementById("myPieChart").getContext("2d");
-//       new Chart(ctx, {
-//         type: "doughnut",
-//         data: {
-//           labels: ["CO₂ Emitted", "Remaining Footprint"],
-//           datasets: [
-//             {
-//               data: [
-//                 userData.co2Emitted,
-//                 userData.maxCo2Footprint - userData.co2Emitted,
-//               ],
-//               backgroundColor: ["#FF6B6B", "#4CAF50"],
-//             },
-//           ],
-//         },
-//         options: {
-//           responsive: true,
-//           plugins: {
-//             legend: { display: true, position: "top" },
-//           },
-//         },
-//       });
-//     }
-//   }, [userData]);
-
-//   if (isLoading) return <div className="text-center py-10">Loading...</div>;
-//   if (!userData)
-//     return (
-//       <div className="text-center py-10 text-red-500">Failed to load data</div>
-//     );
-
-//   const {
-//     user: { username, points },
-//     co2Emitted,
-//     maxCo2Footprint,
-//     co2Percentage,
-//     suggestions,
-//   } = userData;
-
-//   return (
-//     <div className="bg-gray-100 min-h-screen py-10">
-//       <div className="container mx-auto p-6 bg-white shadow-xl rounded-lg">
-//         <h2 className="text-2xl font-bold text-center text-green-700 mb-6">
-//           Welcome, {username}!
-//         </h2>
-//         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-//           {/* Points Section */}
-//           <div className="bg-gradient-to-r from-green-400 to-blue-500 text-white p-6 rounded-lg shadow-lg">
-//             <h3 className="text-xl font-semibold text-center mb-4">
-//               Your Points
-//             </h3>
-//             <p className="text-4xl font-bold text-center text-black">
-//               {points}
-//             </p>
-//           </div>
-
-//           {/* CO2 Pie Chart */}
-//           <div className="bg-white p-6 rounded-lg shadow-lg">
-//             <h3 className="text-xl font-semibold text-center mb-4">
-//               CO₂ Activity Breakdown
-//             </h3>
-//             <canvas id="myPieChart"></canvas>
-//           </div>
-//         </div>
-
-//         {/* Suggestions */}
-//         <div className="mt-6">
-//           <h3 className="text-xl font-semibold mb-4">Suggestions</h3>
-//           <div>
-//             {suggestions.length > 0 ? (
-//               suggestions.map((suggestion, index) => (
-//                 <div
-//                   key={index}
-//                   className="p-4 bg-green-100 rounded-lg border-l-4 border-green-700"
-//                 >
-//                   {suggestion}
-//                 </div>
-//               ))
-//             ) : (
-//               <p>No suggestions available</p>
-//             )}
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Dashboard;

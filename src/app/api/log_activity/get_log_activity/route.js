@@ -1,32 +1,32 @@
 import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
 import Activity from "@/models/Activity/Schema";
 import Daily from "@/models/Daily/Schema";
 import User from "@/models/User/Schema";
 import axios from "axios";
+import { connectToDb } from "@/libs/connectToDb";
 
 const LAMBDA_API_URL = process.env.URILAMA;
 
-export async function GET(req) {
-    const userId  = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
+// export async function GET(req) {
+//   const userId = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
 
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+//   if (!userId) {
+//     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+//   }
 
-  return NextResponse.json({ message: "Render log activity page here." });
-}
+//   return NextResponse.json({ message: "Render log activity page here." });
+// }
 
 export async function POST(req) {
-    const userId  = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
-
+  const userId = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
+  await connectToDb();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const userInput = await req.json(); // Collect input from the user
+    const userInput = await req.json();
     const { transportation, energy, diet, recycling, travel } = userInput;
 
     const emissionFactors2 = {
@@ -49,18 +49,14 @@ export async function POST(req) {
     const co2_energy = emissionFactors2[energy] * 30 || 0;
     const co2_diet = emissionFactors2[diet] * 60 || 0;
     const co2_recycling =
-      recycling === "always"
-        ? 0.1
-        : recycling === "sometimes"
-        ? 0.2
-        : 0.3; // Example values
+      recycling === "always" ? 0.1 : recycling === "sometimes" ? 0.2 : 0.3; // Example values
     const co2_travel = emissionFactors2.flights * travel;
 
     // Get user details (ensure schema is compatible)
-    const user = await User.findById(userId);
+    const user = await User.findOne({ clerkId: userId });
 
     const dailyact = new Daily({
-      userId: user._id,
+      clerkId: userId,
       transportation,
       energy,
       diet,
@@ -95,7 +91,8 @@ export async function POST(req) {
 
     if (response.data && response.data.body) {
       const lambdaBody = JSON.parse(response.data.body);
-      suggestions = lambdaBody.reply || "Unexpected response format from Lambda.";
+      suggestions =
+        lambdaBody.reply || "Unexpected response format from Lambda.";
     } else {
       suggestions = "Unexpected response format from Lambda.";
     }
@@ -105,11 +102,10 @@ export async function POST(req) {
       (diet ? emissionFactors2[diet] * 90 : 0) +
       (travel ? travel * emissionFactors2.flights : 0);
 
-    const co2Reduced =
-      ["bicycle", "walk"].includes(transportation) ? 2 : 0; // Example reduction
+    const co2Reduced = ["bicycle", "walk"].includes(transportation) ? 2 : 0; // Example reduction
 
     const newActivity = new Activity({
-      userId: user._id,
+      clerkId: userId,
       suggestions,
       co2: co2Emitted - co2Reduced,
       reduction: 0,
@@ -120,7 +116,7 @@ export async function POST(req) {
 
     return NextResponse.json({ message: "Data logged successfully!" });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     return NextResponse.json({ error: "Error logging data" }, { status: 500 });
   }
 }

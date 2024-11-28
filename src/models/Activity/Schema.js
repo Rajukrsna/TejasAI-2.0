@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 // Define the Activity schema
 const activitySchema = new mongoose.Schema({
   clerkId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     ref: "User",
     required: true,
   },

@@ -12,7 +12,7 @@ export async function GET() {
 
   try {
     const breakdown = await Daily.aggregate([
-      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      { $match: { clerkId: userId } },
       {
         $project: {
           _id: 0,

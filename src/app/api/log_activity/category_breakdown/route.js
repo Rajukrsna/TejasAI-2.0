@@ -2,17 +2,18 @@ import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 import Activity from "@/models/Activity/Schema";
+import { connectToDb } from "@/libs/connectToDb";
 
 export async function GET() {
-    const userId  = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
-
+  const userId = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
+  await connectToDb();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const breakdown = await Activity.aggregate([
-      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      { $match: { clerkId: userId } },
       {
         $group: {
           _id: null,
@@ -27,9 +28,12 @@ export async function GET() {
       { _id: "Reduction", totalCo2: breakdown[0]?.totalReduction || 0 },
     ];
 
-    return NextResponse.json(response);
+    return NextResponse.json(response,{status: 200});
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Error fetching data." }, { status: 500 });
+    console.log(error);
+    return NextResponse.json(
+      { error: "Error fetching data." },
+      { status: 500 }
+    );
   }
 }

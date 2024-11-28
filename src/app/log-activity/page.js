@@ -749,13 +749,13 @@ export default function Home() {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-8">
       <h1 className="text-center text-3xl font-bold mb-8 text-green-700">
         Earn Points by Uploading Proof
       </h1>
 
       {/* Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 px-9">
         {categoryCards.map((card, index) => (
           <div
             key={index}
@@ -765,7 +765,7 @@ export default function Home() {
             <img
               src={card.imgSrc}
               alt={card.title}
-              className="w-full h-64 object-cover rounded-t-lg"
+              className="w-full h-64 object-cover rounded-t-lg  border-b-4 border-green-700"
             />
             <div className="p-4">
               <h5 className="text-xl font-semibold text-green-700 text-center">

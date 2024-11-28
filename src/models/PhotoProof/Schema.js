@@ -1,8 +1,8 @@
 // models/PhotoProof.js
-const mongoose = require('mongoose');
+import mongoose from "mongoose"
 
 const photoProofSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    clerkId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     photoUrl: { type: String, required: true },
     activityRecognized: { type: String },
     pointsAwarded: { type: Number, default: 0 },

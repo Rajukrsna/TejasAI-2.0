@@ -3,8 +3,9 @@ import Dashboard from "@/components/Dashboard";
 const page = () => {
   return (
     <>
-    <div className="md:p-[80px]">
-      <Dashboard /></div>
+      <div className="md:p-[60px]">
+        <Dashboard />
+      </div>
     </>
   );
 };
