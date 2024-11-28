@@ -44,11 +44,11 @@ export async function POST(req) {
   if (evt.type === "user.created") {
     console.log("userId:", evt.data.id);
 
-    const { id, email_addresses, image_url, username } = evt.data;
+    const { id, email_addresses, username } = evt.data;
 
     const user = {
       clerkId: id,
-      username: username,
+      username: first_name,
       email: email_addresses[0].email_address,
     };
     console.log("from clerk webhooks", user);

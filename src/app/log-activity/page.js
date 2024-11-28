@@ -385,11 +385,6 @@
 //   );
 // }
 
-
-
-
-
-
 // "use client";
 // import { useState } from "react";
 // import axios from "axios"; // Import axios
@@ -472,19 +467,19 @@
 
 //   const handleFormSubmit = async (e) => {
 //     e.preventDefault();
-  
+
 //     if (!imagePreviewUrl) {
 //       setMessage("Please select an image.");
 //       setStatus("error");
 //       return;
 //     }
-  
+
 //     try {
 //       const payload = {
 //         imagePreviewUrl, // Send only the base64-encoded image URL
 //         category,
 //       };
-  
+
 //       const response = await axios.post(
 //         "http://localhost:3000/api/photoProof",
 //         payload, // Send the payload as JSON
@@ -494,7 +489,7 @@
 //           },
 //         }
 //       );
-  
+
 //       if (response.status === 200) {
 //         setMessage(response.data.message || "File uploaded successfully!");
 //         setStatus("success");
@@ -502,7 +497,7 @@
 //         setMessage("Failed to upload file.");
 //         setStatus("error");
 //       }
-  
+
 //       setTimeout(() => {
 //         handleCloseModal();
 //         setMessage("");
@@ -512,7 +507,6 @@
 //       setStatus("error");
 //     }
 //   };
-  
 
 //   return (
 //     <div className="container mx-auto p-4">
@@ -615,15 +609,10 @@
 //   );
 // }
 
-
-
-
-
-
-
 "use client";
 import { useState } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -633,6 +622,7 @@ export default function Home() {
   const [imagePreviewUrl, setImagePreviewUrl] = useState("");
   const [status, setStatus] = useState("");
   const [fileName, setFileName] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const categoryCards = [
     {
@@ -693,7 +683,7 @@ export default function Home() {
     const file = event.target.files[0];
     if (file) {
       setImgFile(file);
-      setFileName(file.name)
+      setFileName(file.name);
     }
     reader.onload = () => {
       setImagePreviewUrl(reader.result);
@@ -703,9 +693,17 @@ export default function Home() {
     };
   };
 
+  const showToast = (type, message) => {
+    if (type === "success") {
+      toast.success(message);
+    } else if (type === "error") {
+      toast.error(message);
+    }
+  };
+
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-
+    setLoading(!loading);
     if (!imagePreviewUrl) {
       setMessage("Please select an image.");
       setStatus("error");
@@ -716,7 +714,7 @@ export default function Home() {
       const payload = {
         imagePreviewUrl,
         category,
-        fileName
+        fileName,
       };
 
       const response = await axios.post(
@@ -732,10 +730,9 @@ export default function Home() {
       if (response.status === 200) {
         setMessage(response.data.message || "File uploaded successfully!");
         setStatus("success");
-      }
-
-      if (response.status===400){
-        console.log("try other images");
+        showToast("success", "Points awarded!");
+      } else if (response.status === 400) {
+        showToast("error", "Oops! Try other categories");
       }
 
       setTimeout(() => {
@@ -743,8 +740,10 @@ export default function Home() {
         setMessage("");
       }, 3000);
     } catch (error) {
-      setMessage("Error connecting to the server.");
-      setStatus("error");
+      const errorMessage = error.response?.data?.message || "Error connecting to the server.";
+      showToast("error", errorMessage);
+    }  finally {
+      setLoading(false);
     }
   };
 
@@ -837,8 +836,9 @@ export default function Home() {
               <button
                 type="submit"
                 className="bg-blue-500 text-white py-2 px-6 rounded-md w-full"
+                disabled={loading}
               >
-                Submit
+                {loading ? "Submitting..." : "Submit"}
               </button>
             </form>
           </div>

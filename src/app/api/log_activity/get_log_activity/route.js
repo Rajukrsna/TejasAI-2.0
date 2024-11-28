@@ -8,18 +8,8 @@ import { connectToDb } from "@/libs/connectToDb";
 
 const LAMBDA_API_URL = process.env.URILAMA;
 
-// export async function GET(req) {
-//   const userId = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
-
-//   if (!userId) {
-//     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-//   }
-
-//   return NextResponse.json({ message: "Render log activity page here." });
-// }
-
 export async function POST(req) {
-  const { userId } = getAuth(req)
+  const { userId } = getAuth(req);
   await connectToDb();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -49,10 +39,8 @@ export async function POST(req) {
     const co2_energy = emissionFactors2[energy] * 30 || 0;
     const co2_diet = emissionFactors2[diet] * 60 || 0;
     const co2_recycling =
-      recycling === "always" ? 0.1 : recycling === "sometimes" ? 0.2 : 0.3; // Example values
+      recycling === "always" ? 0.1 : recycling === "sometimes" ? 0.2 : 0.3;
     const co2_travel = emissionFactors2.flights * travel;
-
-    // Get user details (ensure schema is compatible)
     const user = await User.findOne({ clerkId: userId });
 
     const dailyact = new Daily({
@@ -72,8 +60,6 @@ export async function POST(req) {
     await dailyact.save();
 
     let suggestions = "";
-
-    // Call the AI model for the response
     const response = await axios.post(
       LAMBDA_API_URL,
       {
@@ -102,8 +88,7 @@ export async function POST(req) {
       (diet ? emissionFactors2[diet] * 90 : 0) +
       (travel ? travel * emissionFactors2.flights : 0);
 
-    const co2Reduced = ["bicycle", "walk"].includes(transportation) ? 2 : 0; // Example reduction
-
+    const co2Reduced = ["bicycle", "walk"].includes(transportation) ? 2 : 0; 
     const newActivity = new Activity({
       clerkId: userId,
       suggestions,

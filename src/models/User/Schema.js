@@ -4,12 +4,11 @@ const userSchema = new mongoose.Schema(
   {
     clerkId: {
       type: String,
-      required: true,
-      unique: true,
     },
-    username: { type: String, required: true, unique: true },
-    email: { type: String, required: true, unique: true },
+    username: { type: String, unique: true },
+    email: { type: String },
     points: { type: Number, default: 0 },
+    logActivity: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

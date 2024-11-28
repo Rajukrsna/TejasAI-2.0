@@ -4,7 +4,6 @@ import { connectToDb } from "@/libs/connectToDb";
 import { getAuth } from "@clerk/nextjs/server";
 
 export async function GET(req) {
-  // const userId = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
   const { userId } = getAuth(req);
   await connectToDb();
   if (!userId) {
@@ -28,7 +27,7 @@ export async function GET(req) {
       { _id: "Reduction", totalCo2: breakdown[0]?.totalReduction || 0 },
     ];
 
-    return NextResponse.json(response,{status: 200});
+    return NextResponse.json(response, { status: 200 });
   } catch (error) {
     console.log(error);
     return NextResponse.json(

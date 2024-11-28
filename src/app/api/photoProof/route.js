@@ -18,103 +18,110 @@ const s3 = new S3Client({
 });
 
 const categories = {
-  "recycled plastic": ["recycling symbol", "plastic", "recyclable material", "plastic waste","tub","tin"],
+  "recycled plastic": [
+    "recycling symbol",
+    "plastic",
+    "recyclable material",
+    "plastic waste",
+    "tub",
+    "tin",
+  ],
   "used bicycle": [
-      "pre-owned bicycle",
-      "second-hand bike",
-      "recycled bicycle",
-      "bicycle",
-      "eco-friendly transport",
-      "sustainable cycling",
-      "bike sharing",
-      "refurbished cycle",
-      "green commuting",
-      "low-carbon transport",
-      "bicycle reuse"
+    "pre-owned bicycle",
+    "second-hand bike",
+    "recycled bicycle",
+    "bicycle",
+    "eco-friendly transport",
+    "sustainable cycling",
+    "bike sharing",
+    "refurbished cycle",
+    "green commuting",
+    "low-carbon transport",
+    "bicycle reuse",
   ],
   "ate veg full day": [
-      "vegetarian diet",
-      "plant-based meal",
-      "meatless day",
-      "vegan diet",
-      "sustainable eating",
-      "low-carbon food",
-      "ethical eating",
-      "green meals",
-      "meat-free meals",
-      "plant-forward eating"
+    "vegetarian diet",
+    "plant-based meal",
+    "meatless day",
+    "vegan diet",
+    "sustainable eating",
+    "low-carbon food",
+    "ethical eating",
+    "green meals",
+    "meat-free meals",
+    "plant-forward eating",
   ],
-  "carpooling": [
-      "ride sharing",
-      "shared commute",
-      "car-sharing service",
-      "eco-friendly travel",
-      "reduced emissions",
-      "green transportation",
-      "fuel-saving commute",
-      "low-carbon travel",
-      "group travel",
-      "sustainable transport"
+  carpooling: [
+    "ride sharing",
+    "shared commute",
+    "car-sharing service",
+    "eco-friendly travel",
+    "reduced emissions",
+    "green transportation",
+    "fuel-saving commute",
+    "low-carbon travel",
+    "group travel",
+    "sustainable transport",
   ],
   "zero waste shopping": [
-      "plastic-free shopping",
-      "bulk buying",
-      "reuse containers",
-      "eco-friendly shopping",
-      "sustainable shopping",
-      "minimal waste purchase",
-      "recyclable packaging",
-      "refill station",
-      "waste-free groceries",
-      "low-waste products"
+    "plastic-free shopping",
+    "bulk buying",
+    "reuse containers",
+    "eco-friendly shopping",
+    "sustainable shopping",
+    "minimal waste purchase",
+    "recyclable packaging",
+    "refill station",
+    "waste-free groceries",
+    "low-waste products",
   ],
   "planted tree": [
-      "tree plantation",
-      "reforestation",
-      "forest restoration",
-      "tree sapling",
-       "gardening",
-       "garden",
-       "Nature",
-      "eco-friendly activity",
-      "carbon offset",
-      "environmental conservation",
-      "green initiative",
-      "native tree planting",
-      "afforestation effort"
+    "tree plantation",
+    "reforestation",
+    "forest restoration",
+    "tree sapling",
+    "gardening",
+    "garden",
+    "Nature",
+    "eco-friendly activity",
+    "carbon offset",
+    "environmental conservation",
+    "green initiative",
+    "native tree planting",
+    "afforestation effort",
   ],
   "switch to LED bulbs": [
-      "energy-efficient lighting",
-      "LED replacement",
-      "low-energy bulbs",
-      "eco-friendly lights",
-      "sustainable lighting",
-      "green energy saving",
-      "carbon footprint reduction",
-      "long-lasting bulbs",
-      "LED retrofit",
-      "energy-saving solutions"
+    "energy-efficient lighting",
+    "LED replacement",
+    "low-energy bulbs",
+    "eco-friendly lights",
+    "sustainable lighting",
+    "green energy saving",
+    "carbon footprint reduction",
+    "long-lasting bulbs",
+    "LED retrofit",
+    "energy-saving solutions",
   ],
   "plastic-free packaging": [
-      "biodegradable packaging",
-      "compostable packaging",
-      "recyclable materials",
-      "zero plastic wraps",
-      "Package Delivery",
-      " cardboard",
-      "box",
-      "disposable Cup",
-      "carton",
-      "eco-friendly packaging",
-      "sustainable packaging",
-      "waste-free packaging",
-      "natural materials",
-      "paper-based packaging",
-      "green product packaging"
+    "biodegradable packaging",
+    "compostable packaging",
+    "recyclable materials",
+    "zero plastic wraps",
+    "Package Delivery",
+    " cardboard",
+    "box",
+    "disposable Cup",
+    "carton",
+    "eco-friendly packaging",
+    "sustainable packaging",
+    "waste-free packaging",
+    "natural materials",
+    "paper-based packaging",
+    "green product packaging",
   ],
 };
 
-const REKOG_API_URL = process.env.awsrec; 
+const REKOG_API_URL = process.env.awsrec;
 export async function POST(req) {
   const { userId } = getAuth(req);
   try {
@@ -129,15 +136,11 @@ export async function POST(req) {
         { status: 400 }
       );
     }
-
-    // Fetch image from the URL
     const response = await axios({
       method: "get",
       url: imageUrl,
       responseType: "stream",
     });
-
-    // Save the image to a temporary path
     const tempDir = os.tmpdir();
     const tempImagePath = path.join(
       tempDir,
@@ -177,7 +180,7 @@ export async function POST(req) {
           }
 
           const normalizedCategory = category.toLowerCase();
-          console.log("here i am ", normalizedCategory)
+          console.log("here i am ", normalizedCategory);
           if (!categories[normalizedCategory]) {
             return resolve(
               new Response(
@@ -188,8 +191,10 @@ export async function POST(req) {
           }
 
           const matchedLabel = labels.some((label) => {
-          const normalizedLabelName = label.Name.toLowerCase();
-            return categories[normalizedCategory]?.includes(normalizedLabelName);
+            const normalizedLabelName = label.Name.toLowerCase();
+            return categories[normalizedCategory]?.includes(
+              normalizedLabelName
+            );
           });
 
           if (matchedLabel) {
@@ -199,7 +204,7 @@ export async function POST(req) {
             user.points += 5; // Add points for correct match
             await user.save();
 
-            const activity = await Activity.findOne({ clerkId:  userId });
+            const activity = await Activity.findOne({ clerkId: userId });
 
             if (activity) {
               activity.reduction += 50; // Add reduction value
@@ -229,7 +234,9 @@ export async function POST(req) {
           } else {
             return resolve(
               new Response(
-                JSON.stringify({ message: "Wrong category, no points awarded." }),
+                JSON.stringify({
+                  message: "Wrong category, no points awarded.",
+                }),
                 { status: 400 }
               )
             );
@@ -261,8 +268,6 @@ export async function POST(req) {
   }
 }
 
-
-// Helper function to analyze the image using Rekognition API
 async function analyzeImage(bucketName, objectKey) {
   const response = await axios.post(
     REKOG_API_URL,

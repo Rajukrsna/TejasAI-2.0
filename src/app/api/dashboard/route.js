@@ -7,8 +7,7 @@ export async function GET(req) {
   try {
     await connectToDb();
     const { userId } = getAuth(req);
-    // const userId  = "user_2pQbMG8GIQOhas0DonijxDCsi0T";
-    console.log("from backend",userId);
+    console.log("from backend", userId);
     if (!userId) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
