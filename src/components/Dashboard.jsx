@@ -179,14 +179,14 @@ const Dashboard = () => {
 
   const activityChartRef = useRef(null);
   const categoryChartRef = useRef(null);
-  const activityChartInstance = useRef(null); // To store activity chart instance
+  const activityChartInstance = useRef(null);
   const categoryChartInstance = useRef(null);
 
+  // Fetch data
   useEffect(() => {
-    // Fetch dashboard data
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/dashboard");
+        const response = await axios.get("/api/dashboard");
         setUserData(response.data);
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -198,141 +198,106 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
+  // Render Activity Breakdown
+  const renderActivityBreakdown = async () => {
+    try {
+      const response = await axios.get("/api/log_activity/activity_breakdown/");
+      const data = await response.data;
+
+      if (activityChartInstance.current) {
+        activityChartInstance.current.destroy();
+      }
+
+      const labels = data.categories.map((item) => item.label);
+      const values = data.categories.map((item) => item.value);
+
+      if (activityChartRef.current) {
+        const ctx = activityChartRef.current.getContext("2d");
+        activityChartInstance.current = new Chart(ctx, {
+          type: "pie",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                data: values,
+                backgroundColor: [
+                  "#52b788",
+                  "#ffadad",
+                  "#ffb84d",
+                  "#ffd700",
+                  "#ff9999",
+                ],
+                hoverOffset: 4,
+              },
+            ],
+          },
+          options: {
+            plugins: {
+              legend: { position: "top" },
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Error rendering activity breakdown:", error);
+    }
+  };
+
+  // Render Category Breakdown
+  const renderCategoryBreakdown = async () => {
+    try {
+      const response = await axios.get("/api/log_activity/category_breakdown/");
+      const data = await response.data;
+
+      if (categoryChartInstance.current) {
+        categoryChartInstance.current.destroy();
+      }
+
+      const labels = data.map((item) => item._id); // e.g., ['Emission', 'Reduction']
+      const values = data.map((item) => item.totalCo2);
+
+      if (categoryChartRef.current) {
+        const ctx = categoryChartRef.current.getContext("2d");
+        categoryChartInstance.current = new Chart(ctx, {
+          type: "pie",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                data: values,
+                backgroundColor: ["#FF6384", "#36A2EB"],
+                hoverOffset: 4,
+              },
+            ],
+          },
+          options: {
+            plugins: {
+              legend: { position: "top" },
+            },
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Error rendering category breakdown:", error);
+    }
+  };
+
+  // Ensure Charts Rendered on DOM Updates
   useEffect(() => {
-    // Wait for the DOM to be ready before rendering charts
-    const handleDOMContentLoaded = async () => {
-      const renderCategoryBreakdown = async () => {
-        if (!categoryChartRef.current) return;
-
-        try {
-          const response = await axios.get("/api/log_activity/category_breakdown/");
-          const data = await response.data;
-          const labels = data.map((item) => item._id); // Extract labels: ['Emission', 'Reduction']
-          const values = data.map((item) => item.totalCo2);
-
-          if (categoryChartInstance.current) {
-            categoryChartInstance.current.destroy();
-          }
-
-          const canvas = categoryChartRef.current;
-          if (canvas) {
-            const ctx = canvas.getContext("2d");
-            categoryChartInstance.current = new Chart(ctx, {
-              type: "pie",
-              data: {
-                labels: labels,
-                datasets: [
-                  {
-                    data: values,
-                    backgroundColor: ["#FF6384", "#36A2EB"], // Colors for categories
-                    hoverOffset: 4,
-                  },
-                ],
-              },
-              options: {
-                plugins: {
-                  legend: {
-                    position: "top",
-                  },
-                  tooltip: {
-                    callbacks: {
-                      label: function (tooltipItem) {
-                        const value = tooltipItem.raw;
-                        return `${tooltipItem.label}: ${value.toFixed(2)} kg CO2`;
-                      },
-                    },
-                  },
-                },
-              },
-            });
-          }
-        } catch (error) {
-          console.error("Error fetching category breakdown:", error);
-        }
-      };
-
-      const renderActivityBreakdown = async () => {
-        if (!activityChartRef.current) return;
-
-        try {
-          const response = await axios.get("/api/log_activity/activity_breakdown/");
-          const data = await response.data;
-          const labels = data.categories.map((item) => item.label);
-          const values = data.categories.map((item) => item.value);
-
-          if (activityChartInstance.current) {
-            activityChartInstance.current.destroy();
-          }
-
-          const canvas = activityChartRef.current;
-          if (canvas) {
-            const ctx = canvas.getContext("2d");
-            activityChartInstance.current = new Chart(ctx, {
-              type: "pie",
-              data: {
-                labels: labels,
-                datasets: [
-                  {
-                    data: values,
-                    backgroundColor: [
-                      "#52b788",
-                      "#ffadad",
-                      "#ffb84d",
-                      "#ffd700",
-                      "#ff9999",
-                    ],
-                    hoverOffset: 4,
-                  },
-                ],
-              },
-              options: {
-                responsive: true,
-                plugins: {
-                  legend: {
-                    position: "top",
-                  },
-                  tooltip: {
-                    callbacks: {
-                      label: function (tooltipItem) {
-                        const value = tooltipItem.raw;
-                        return `${tooltipItem.label}: ${value.toFixed(2)} kg CO2`;
-                      },
-                    },
-                  },
-                },
-              },
-            });
-          }
-        } catch (error) {
-          console.error("Error fetching activity breakdown:", error);
-        }
-      };
-
-      await renderCategoryBreakdown();
-      await renderActivityBreakdown();
-    };
-
-    if (document.readyState === "complete") {
-      // If the DOM is already loaded
-      handleDOMContentLoaded();
-    } else {
-      // Wait for DOMContentLoaded
-      window.addEventListener("DOMContentLoaded", handleDOMContentLoaded);
+    if (!isLoading && userData) {
+      renderActivityBreakdown();
+      renderCategoryBreakdown();
     }
 
-    // Cleanup the event listener on component unmount
+    // Cleanup to prevent duplicate chart rendering
     return () => {
-      window.removeEventListener("DOMContentLoaded", handleDOMContentLoaded);
       if (activityChartInstance.current) activityChartInstance.current.destroy();
       if (categoryChartInstance.current) categoryChartInstance.current.destroy();
     };
-  }, []);
+  }, [userData, isLoading]);
 
-  if (isLoading) return <div className="text-center py-10">Loading...</div>;
-  if (!userData)
-    return (
-      <div className="text-center py-10 text-red-500">Failed to load data</div>
-    );
+  if (isLoading) return <div>Loading...</div>;
+  if (!userData) return <div>Error loading data</div>;
 
   const {
     user: { username, points },
