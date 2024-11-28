@@ -86,7 +86,7 @@ export default function NavBar() {
                   <p className="text-xl text-white">Logout</p>
                 </button>
                 <div className="flex items-center gap-[5px] hover:text-yellow-200 px-2 py-2 border border-transparent hover:border-yellow-500 hover:bg-yellow-100 hover:bg-opacity-30 transition-all duration-300">
-                  <UserButton signOutFallbackUrl="/sign-in" />
+                  <UserButton/>
                   {/* <p className="text-white">{user.username}</p> */}
                 </div>
               </div>

@@ -189,7 +189,7 @@ const Dashboard = () => {
         const response = await axios.get("/api/dashboard");
         setUserData(response.data);
       } catch (error) {
-        console.error("Error fetching dashboard data:", error);
+        console.log("Error fetching dashboard data:", error);
       } finally {
         setIsLoading(false);
       }
