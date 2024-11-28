@@ -48,8 +48,8 @@ export async function POST(req) {
 
     const user = {
       clerkId: id,
+      username: username,
       email: email_addresses[0].email_address,
-      userName: username,
     };
     console.log("from clerk webhooks", user);
     const newUser = await createUser(user);

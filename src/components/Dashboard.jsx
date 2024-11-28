@@ -5,15 +5,185 @@ Chart.register(...registerables);
 import axios from "axios";
 
 const Dashboard = () => {
+  // const [userData, setUserData] = useState(null);
+  // const [isLoading, setIsLoading] = useState(true);
+
+  // const activityChartRef = useRef(null);
+  // const categoryChartRef = useRef(null);
+  // const activityChartInstance = useRef(null); // To store activity chart instance
+  // const categoryChartInstance = useRef(null); 
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await axios.get("http://localhost:3000/api/dashboard");
+  //       setUserData(response.data);
+  //     } catch (error) {
+  //       console.error("Error fetching dashboard data:", error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+  //   fetchData();
+  // }, []);
+
+  // useEffect(() => {
+  //   async function renderCategoryBreakdown() {
+  //     if (!categoryChartRef.current) {
+  //       console.log("Category Chart Canvas Ref not ready yet");
+  //       return;
+  //     }
+  //     try {
+  //       const response = await axios.get(
+  //         "/api/log_activity/category_breakdown/"
+  //       );
+  //       const data = await response.data;
+  //       const labels = data.map((item) => item._id); // Extract labels: ['Emission', 'Reduction']
+  //       const values = data.map((item) => item.totalCo2);
+
+  //       if (categoryChartInstance.current) {
+  //         categoryChartInstance.current.destroy();
+  //       }
+
+  //       const canvas = categoryChartRef.current;
+  //       if (canvas) {
+  //         const ctx = canvas.getContext("2d");
+  //         categoryChartInstance.current = new Chart(ctx, {
+  //           type: "pie",
+  //           data: {
+  //             labels: labels,
+  //             datasets: [
+  //               {
+  //                 data: values,
+  //                 backgroundColor: ["#FF6384", "#36A2EB"], // Colors for categories
+  //                 hoverOffset: 4,
+  //               },
+  //             ],
+  //           },
+  //           options: {
+  //             plugins: {
+  //               legend: {
+  //                 position: "top",
+  //               },
+  //               tooltip: {
+  //                 callbacks: {
+  //                   label: function (tooltipItem) {
+  //                     const value = tooltipItem.raw;
+  //                     return `${tooltipItem.label}: ${value.toFixed(2)} kg CO2`;
+  //                   },
+  //                 },
+  //               },
+  //             },
+  //           },
+  //         });
+  //       } else {
+  //         console.log("not found category");
+  //       }
+  //     } catch (error) {
+  //       console.log("Error fetching category breakdown:", error);
+  //     }
+  //   }
+
+  //   async function renderActivityBreakdown() {
+      
+  //     try {
+  //       const response = await axios.get(
+  //         "/api/log_activity/activity_breakdown/"
+  //       );
+  //       const data = await response.data;
+  //       const labels = data.categories.map((item) => item.label);
+  //       const values = data.categories.map((item) => item.value);
+  //       console.log("data is", labels);
+  //       console.log("valuue is", values);
+  //       if (activityChartInstance.current) {
+  //         activityChartInstance.current.destroy();
+  //       }
+
+  //       const canvas = activityChartRef.current;
+  //       if (canvas) {
+  //         const ctx = canvas.getContext("2d");
+  //         activityChartInstance.current = new Chart(ctx, {
+  //           type: "pie",
+  //           data: {
+  //             labels: labels,
+  //             datasets: [
+  //               {
+  //                 data: values,
+  //                 backgroundColor: [
+  //                   "#52b788", // Color for "Transportation"
+  //                   "#ffadad", // Color for "Energy"
+  //                   "#ffb84d", // Color for "Diet"
+  //                   "#ffd700", // Color for "Recycling"
+  //                   "#ff9999", // Color for "Travel"
+  //                 ], // Custom colors
+  //                 hoverOffset: 4, // Offset effect when hovering
+  //               },
+  //             ],
+  //           },
+  //           options: {
+  //             responsive: true,
+  //             plugins: {
+  //               legend: {
+  //                 position: "top",
+  //               },
+  //               tooltip: {
+  //                 callbacks: {
+  //                   label: function (tooltipItem) {
+  //                     const value = tooltipItem.raw;
+  //                     return `${tooltipItem.label}: ${value.toFixed(2)} kg CO2`;
+  //                   },
+  //                 },
+  //               },
+  //             },
+  //           },
+  //         });
+  //       } else {
+  //         console.log("not found activity");
+  //       }
+  //     } catch (error) {
+  //       console.log("Error fetching activity breakdown:", error);
+  //     }
+  //   }
+  //   renderCategoryBreakdown();
+  //   renderActivityBreakdown();
+
+  //   return () => {
+  //     if (activityChartInstance.current) {
+  //       activityChartInstance.current.destroy();
+  //     }
+  //     if (categoryChartInstance.current) {
+  //       categoryChartInstance.current.destroy();
+  //     }
+  //   };
+  // }, [categoryChartRef.current]);
+
+  // if (isLoading) return <div className="text-center py-10">Loading...</div>;
+  // if (!userData)
+  //   return (
+  //     <div className="text-center py-10 text-red-500">Failed to load data</div>
+  //   );
+
+  // const {
+  //   user: { username, points },
+  //   co2Emitted,
+  //   maxCo2Footprint,
+  //   co2Percentage,
+  //   suggestions,
+  // } = userData;
+  // const contribution = Math.floor((co2Emitted / maxCo2Footprint) * 100);
+
+
+
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const activityChartRef = useRef(null);
   const categoryChartRef = useRef(null);
   const activityChartInstance = useRef(null); // To store activity chart instance
-  const categoryChartInstance = useRef(null); 
+  const categoryChartInstance = useRef(null);
 
   useEffect(() => {
+    // Fetch dashboard data
     const fetchData = async () => {
       try {
         const response = await axios.get("http://localhost:3000/api/dashboard");
@@ -24,138 +194,139 @@ const Dashboard = () => {
         setIsLoading(false);
       }
     };
+
     fetchData();
   }, []);
 
   useEffect(() => {
-    async function renderCategoryBreakdown() {
-      if (!categoryChartRef.current) {
-        console.log("Category Chart Canvas Ref not ready yet");
-        return;
-      }
-      try {
-        const response = await axios.get(
-          "/api/log_activity/category_breakdown/"
-        );
-        const data = await response.data;
-        const labels = data.map((item) => item._id); // Extract labels: ['Emission', 'Reduction']
-        const values = data.map((item) => item.totalCo2);
+    // Wait for the DOM to be ready before rendering charts
+    const handleDOMContentLoaded = async () => {
+      const renderCategoryBreakdown = async () => {
+        if (!categoryChartRef.current) return;
 
-        if (categoryChartInstance.current) {
-          categoryChartInstance.current.destroy();
-        }
+        try {
+          const response = await axios.get("/api/log_activity/category_breakdown/");
+          const data = await response.data;
+          const labels = data.map((item) => item._id); // Extract labels: ['Emission', 'Reduction']
+          const values = data.map((item) => item.totalCo2);
 
-        const canvas = categoryChartRef.current;
-        if (canvas) {
-          const ctx = canvas.getContext("2d");
-          categoryChartInstance.current = new Chart(ctx, {
-            type: "pie",
-            data: {
-              labels: labels,
-              datasets: [
-                {
-                  data: values,
-                  backgroundColor: ["#FF6384", "#36A2EB"], // Colors for categories
-                  hoverOffset: 4,
-                },
-              ],
-            },
-            options: {
-              plugins: {
-                legend: {
-                  position: "top",
-                },
-                tooltip: {
-                  callbacks: {
-                    label: function (tooltipItem) {
-                      const value = tooltipItem.raw;
-                      return `${tooltipItem.label}: ${value.toFixed(2)} kg CO2`;
+          if (categoryChartInstance.current) {
+            categoryChartInstance.current.destroy();
+          }
+
+          const canvas = categoryChartRef.current;
+          if (canvas) {
+            const ctx = canvas.getContext("2d");
+            categoryChartInstance.current = new Chart(ctx, {
+              type: "pie",
+              data: {
+                labels: labels,
+                datasets: [
+                  {
+                    data: values,
+                    backgroundColor: ["#FF6384", "#36A2EB"], // Colors for categories
+                    hoverOffset: 4,
+                  },
+                ],
+              },
+              options: {
+                plugins: {
+                  legend: {
+                    position: "top",
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: function (tooltipItem) {
+                        const value = tooltipItem.raw;
+                        return `${tooltipItem.label}: ${value.toFixed(2)} kg CO2`;
+                      },
                     },
                   },
                 },
               },
-            },
-          });
-        } else {
-          console.log("not found category");
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching category breakdown:", error);
         }
-      } catch (error) {
-        console.log("Error fetching category breakdown:", error);
-      }
-    }
+      };
 
-    async function renderActivityBreakdown() {
-      
-      try {
-        const response = await axios.get(
-          "/api/log_activity/activity_breakdown/"
-        );
-        const data = await response.data;
-        const labels = data.categories.map((item) => item.label);
-        const values = data.categories.map((item) => item.value);
-        console.log("data is", labels);
-        console.log("valuue is", values);
-        if (activityChartInstance.current) {
-          activityChartInstance.current.destroy();
-        }
+      const renderActivityBreakdown = async () => {
+        if (!activityChartRef.current) return;
 
-        const canvas = activityChartRef.current;
-        if (canvas) {
-          const ctx = canvas.getContext("2d");
-          activityChartInstance.current = new Chart(ctx, {
-            type: "pie",
-            data: {
-              labels: labels,
-              datasets: [
-                {
-                  data: values,
-                  backgroundColor: [
-                    "#52b788", // Color for "Transportation"
-                    "#ffadad", // Color for "Energy"
-                    "#ffb84d", // Color for "Diet"
-                    "#ffd700", // Color for "Recycling"
-                    "#ff9999", // Color for "Travel"
-                  ], // Custom colors
-                  hoverOffset: 4, // Offset effect when hovering
-                },
-              ],
-            },
-            options: {
-              responsive: true,
-              plugins: {
-                legend: {
-                  position: "top",
-                },
-                tooltip: {
-                  callbacks: {
-                    label: function (tooltipItem) {
-                      const value = tooltipItem.raw;
-                      return `${tooltipItem.label}: ${value.toFixed(2)} kg CO2`;
+        try {
+          const response = await axios.get("/api/log_activity/activity_breakdown/");
+          const data = await response.data;
+          const labels = data.categories.map((item) => item.label);
+          const values = data.categories.map((item) => item.value);
+
+          if (activityChartInstance.current) {
+            activityChartInstance.current.destroy();
+          }
+
+          const canvas = activityChartRef.current;
+          if (canvas) {
+            const ctx = canvas.getContext("2d");
+            activityChartInstance.current = new Chart(ctx, {
+              type: "pie",
+              data: {
+                labels: labels,
+                datasets: [
+                  {
+                    data: values,
+                    backgroundColor: [
+                      "#52b788",
+                      "#ffadad",
+                      "#ffb84d",
+                      "#ffd700",
+                      "#ff9999",
+                    ],
+                    hoverOffset: 4,
+                  },
+                ],
+              },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: {
+                    position: "top",
+                  },
+                  tooltip: {
+                    callbacks: {
+                      label: function (tooltipItem) {
+                        const value = tooltipItem.raw;
+                        return `${tooltipItem.label}: ${value.toFixed(2)} kg CO2`;
+                      },
                     },
                   },
                 },
               },
-            },
-          });
-        } else {
-          console.log("not found activity");
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching activity breakdown:", error);
         }
-      } catch (error) {
-        console.log("Error fetching activity breakdown:", error);
-      }
-    }
-    renderCategoryBreakdown();
-    renderActivityBreakdown();
+      };
 
-    return () => {
-      if (activityChartInstance.current) {
-        activityChartInstance.current.destroy();
-      }
-      if (categoryChartInstance.current) {
-        categoryChartInstance.current.destroy();
-      }
+      await renderCategoryBreakdown();
+      await renderActivityBreakdown();
     };
-  }, [categoryChartRef.current]);
+
+    if (document.readyState === "complete") {
+      // If the DOM is already loaded
+      handleDOMContentLoaded();
+    } else {
+      // Wait for DOMContentLoaded
+      window.addEventListener("DOMContentLoaded", handleDOMContentLoaded);
+    }
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener("DOMContentLoaded", handleDOMContentLoaded);
+      if (activityChartInstance.current) activityChartInstance.current.destroy();
+      if (categoryChartInstance.current) categoryChartInstance.current.destroy();
+    };
+  }, []);
 
   if (isLoading) return <div className="text-center py-10">Loading...</div>;
   if (!userData)
@@ -170,8 +341,8 @@ const Dashboard = () => {
     co2Percentage,
     suggestions,
   } = userData;
-  const contribution = Math.floor((co2Emitted / maxCo2Footprint) * 100);
 
+  const contribution = Math.floor((co2Emitted / maxCo2Footprint) * 100);
   return (
     <div className=" min-h-screen">
       <div className="container mx-auto p-6 bg-white shadow-xl rounded-lg">
