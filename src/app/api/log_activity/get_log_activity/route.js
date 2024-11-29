@@ -69,8 +69,13 @@ export async function POST(req) {
       },
       {
         headers: {
+<<<<<<< HEAD
           "Content-Type": "text/plain",
           'Accept': 'application/json'
+=======
+          "Content-Type": "application/json",
+          Accept: "application/json",
+>>>>>>> fe9bfd0b4672a31206aa697b108df86125cab7ef
         },
       }
     );
