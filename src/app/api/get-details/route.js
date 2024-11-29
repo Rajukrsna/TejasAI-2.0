@@ -13,12 +13,13 @@ export async function GET(req) {
     }
 
     const user = await User.findOne({ clerkId: userId });
+    console.log("user is", user);
     if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
-
-    const activity = user.logActivity || false; // Default to false if logActivity is undefined
-
+    console.log("user is found from getdetails", user);
+    const activity = user.logActivity || false;
+    console.log("activity is", activity); 
     return NextResponse.json({ message: activity }, { status: 200 });
   } catch (error) {
     console.error("Error in GET /api/get-details:", error);
