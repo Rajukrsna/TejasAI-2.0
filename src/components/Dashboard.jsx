@@ -4,10 +4,12 @@ import { Chart, registerables } from "chart.js";
 Chart.register(...registerables);
 import axios from "axios";
 import { toast } from "react-toastify";
+import router, { useRouter } from "next/navigation";
 
 const Dashboard = () => {
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   const activityChartRef = useRef(null);
   const categoryChartRef = useRef(null);
@@ -25,7 +27,7 @@ const Dashboard = () => {
           if (activity === true) {
             return; // Do nothing if activity is true
           } else if (activity === false) {
-            Router.push("/get-details");
+            router.push("/get-details");
           }
         }
       } catch (error) {
