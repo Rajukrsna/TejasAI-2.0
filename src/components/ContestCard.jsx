@@ -1,14 +1,17 @@
 import Link from "next/link";
 import React from "react";
 
-const ContestCard = ({ name }) => {
+const ContestCard = ({ name, img, description, time }) => {
   return (
-    <Link href="/contest_details">
+    <Link href={{
+      pathname: "/contest_details",
+      query: { title: name, description, time: time },
+    }}>
       <div className="p-[14px] shadow-xl rounded-xl bg-gradient-to-r from-green-300 to-blue-300 pb-[60px] md:my-[20px] my-[10px] cursor-pointer transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl">
         <div>
           <img
-            src="https://i.ibb.co/80MtHpm/cycle.jpg"
-            className="rounded-lg w-full h-auto"
+            src={img}
+            className="rounded-lg w-full h-[250px]"
             alt="contest image"
           />
         </div>
