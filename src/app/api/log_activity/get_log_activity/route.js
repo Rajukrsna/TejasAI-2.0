@@ -14,11 +14,10 @@ export async function POST(req) {
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
+  console.log("from log_activity");
   try {
     const userInput = await req.json();
     const { transportation, energy, diet, recycling, travel } = userInput;
-
     const emissionFactors2 = {
       car_petrol: 2.4,
       car_diesel: 2.6,
@@ -34,7 +33,6 @@ export async function POST(req) {
       vegan: 1.0,
       flights: 90,
     };
-
     const co2_transportation = emissionFactors2[transportation] * 20 || 0;
     const co2_energy = emissionFactors2[energy] * 30 || 0;
     const co2_diet = emissionFactors2[diet] * 60 || 0;
@@ -76,7 +74,6 @@ export async function POST(req) {
         },
       }
     );
-    console.log("from suggestion api url", response);
     if (response.data && response.data.body) {
       const lambdaBody = JSON.parse(response.data.body);
       suggestions =
@@ -93,12 +90,11 @@ export async function POST(req) {
     const co2Reduced = ["bicycle", "walk"].includes(transportation) ? 2 : 0; 
     const newActivity = new Activity({
       clerkId: userId,
-      suggestions,
+      suggestions: suggestions,
       co2: co2Emitted - co2Reduced,
       reduction: 0,
       date: new Date(),
     });
-
     await newActivity.save();
 
     return NextResponse.json({ message: "Data logged successfully!" });

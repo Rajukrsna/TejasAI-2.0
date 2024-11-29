@@ -2,9 +2,10 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function LogActivity() {
-    const router = useRouter();
+  const router = useRouter();
   const [formData, setFormData] = useState({
     transportation: "",
     energy: "",
@@ -12,6 +13,7 @@ export default function LogActivity() {
     recycling: "",
     travel: "",
   });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,21 +25,23 @@ export default function LogActivity() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+    setLoading(true);
     try {
-        const response = await axios.post("/api/log_activity/get_log_activity", {
-            transportation: formData.transportation,
-            energy: formData.energy,
-            diet: formData.diet,
-            recycling: formData.recycling,
-            travel: parseInt(formData.travel, 10), // Ensure travel is a number
-          });
-          if (response.status===200){
-            console.log("Success from frontend");
-            router.push("/dashboard");
-          }
+      const response = await axios.post("/api/log_activity/get_log_activity", {
+        transportation: formData.transportation,
+        energy: formData.energy,
+        diet: formData.diet,
+        recycling: formData.recycling,
+        travel: parseInt(formData.travel, 10), // Ensure travel is a number
+      });
+      if (response.status === 200) {
+        toast.success("Submitted Successfully!");
+        router.push("/dashboard");
+      }
     } catch (error) {
-        console.log(error);
+      console.log(error);
+    } finally {
+      setLoading(!loading);
     }
   };
 
@@ -174,9 +178,11 @@ export default function LogActivity() {
         {/* Submit Button */}
         <button
           type="submit"
+          disabled={loading}
+          aria-busy={loading}
           className="btn btn-primary w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-500 focus:outline-none focus:ring-2 focus:ring-green-300"
         >
-          Submit
+          {loading ? "Submitting" : "Submit"}
         </button>
       </form>
     </div>

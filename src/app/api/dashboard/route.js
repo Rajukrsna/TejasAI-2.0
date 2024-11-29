@@ -7,7 +7,6 @@ export async function GET(req) {
   try {
     await connectToDb();
     const { userId } = getAuth(req);
-    console.log("from backend", userId);
     if (!userId) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -19,7 +18,7 @@ export async function GET(req) {
         status: 404,
       });
     }
-    const activities = await Activity.find({ userId: userData._id });
+    const activities = await Activity.find({clerkId: userId });
 
     const maxCo2Footprint = 3000;
     const contribution = 10;
@@ -48,7 +47,7 @@ export async function GET(req) {
       { status: 200 }
     );
   } catch (err) {
-    console.error("Error loading dashboard:", err);
+    console.log("Error loading dashboard:", err);
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
     });
