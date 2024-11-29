@@ -42,6 +42,8 @@ export async function POST(req) {
       recycling === "always" ? 0.1 : recycling === "sometimes" ? 0.2 : 0.3;
     const co2_travel = emissionFactors2.flights * travel;
     const user = await User.findOne({ clerkId: userId });
+    user.logActivity = true;
+    await user.save();
 
     const dailyact = new Daily({
       clerkId: userId,
@@ -74,7 +76,7 @@ export async function POST(req) {
         },
       }
     );
-
+    console.log("from suggestion api url", response);
     if (response.data && response.data.body) {
       const lambdaBody = JSON.parse(response.data.body);
       suggestions =
