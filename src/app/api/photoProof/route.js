@@ -7,6 +7,7 @@ import User from "@/models/User/Schema";
 import Activity from "@/models/Activity/Schema";
 import { connectToDb } from "@/libs/connectToDb";
 import { getAuth } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 // Initialize S3 Client
 const s3 = new S3Client({
@@ -75,7 +76,7 @@ const categories = {
     "waste-free groceries",
     "low-waste products",
   ],
-  "planted tree": [
+  "planted a tree": [
     "tree plantation",
     "reforestation",
     "forest restoration",
@@ -119,6 +120,57 @@ const categories = {
     "paper-based packaging",
     "green product packaging",
   ],
+  "plant & prove": [
+    "tree planting",
+    "garden",
+    "nature",
+    "sapling",
+    "flower bed",
+    "forest",
+    "watering plants",
+    "shovel",
+    "outdoors",
+    "compost soil",
+  ],
+  "bike for the planet": [
+    "bicycle",
+    "cycling",
+    "bike helmet",
+    "outdoor cycling",
+    "cycling path",
+    "eco-transportation",
+    "commuting by bike",
+  ],
+  "zero-waste challenge": [
+    "recycling bin",
+    "composting",
+    "reuse items",
+    "cloth bag",
+    "glass bottle",
+    "metal straw",
+    "upcycled material",
+    "recycled paper",
+  ],
+  "switch & save energy": [
+    "solar panel",
+    "LED light bulb",
+    "energy meter",
+    "turning off lights",
+    "smart thermostat",
+    "low-energy appliance",
+    "wind turbine",
+    "green building",
+  ],
+  "eco-cooking superstar": [
+    "organic vegetables",
+    "farm-to-table food",
+    "compost bin",
+    "reusable kitchenware",
+    "energy-efficient stove",
+    "plant-based meal",
+    "eco-friendly packaging",
+    "homegrown herbs",
+  ],
 };
 
 const REKOG_API_URL = process.env.awsrec;
@@ -129,7 +181,8 @@ export async function POST(req) {
     const imageUrl = payload.imagePreviewUrl;
     const category = payload.category;
     const fileName = payload.fileName;
-
+    // console.log("form photoProof", imageUrl);
+    console.log("from photoproof", category);
     if (!imageUrl || !category) {
       return new Response(
         JSON.stringify({ message: "Image URL and category are required" }),
@@ -168,7 +221,6 @@ export async function POST(req) {
 
           // Analyze image (AWS Rekognition)
           const labels = await analyzeImage(bucketName, objectKey);
-          console.log(labels);
 
           if (!Array.isArray(labels)) {
             return resolve(
@@ -179,28 +231,24 @@ export async function POST(req) {
             );
           }
 
-          const normalizedCategory = category.toLowerCase();
-          console.log("here i am ", normalizedCategory);
-          if (!categories[normalizedCategory]) {
-            return resolve(
-              new Response(
-                JSON.stringify({ message: "Invalid category provided" }),
+          const normalizedCategory = category.toLowerCase().trim();
+          if (!categories.hasOwnProperty(normalizedCategory)) {
+            return NextResponse.json(
+              JSON.stringify(
+                { message: "Invalid category provided" },
                 { status: 400 }
               )
             );
           }
-
           const matchedLabel = labels.some((label) => {
             const normalizedLabelName = label.Name.toLowerCase();
             return categories[normalizedCategory]?.includes(
               normalizedLabelName
             );
           });
-
           if (matchedLabel) {
             await connectToDb();
             const user = await User.findOne({ clerkId: userId });
-
             user.points += 5; // Add points for correct match
             await user.save();
 

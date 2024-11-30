@@ -23,6 +23,7 @@ const contest = [
     ],
     timing: "2024-11-29T00:00:00.000Z",
     img: "https://i.ibb.co/80MtHpm/cycle.jpg",
+    registered_users :[],
   },
   {
     id:2,
@@ -49,6 +50,7 @@ const contest = [
     ],
     timing: "2024-11-29T00:00:00.000Z",
     img: "https://i.ibb.co/80MtHpm/cycle.jpg",
+    registered_users :[],
   },
   {
     id:3,
@@ -74,6 +76,7 @@ const contest = [
     ],
     timing: "2024-12-15T00:00:00.000Z",
     img: "https://i.ibb.co/80MtHpm/cycle.jpg",
+    registered_users :[],
   },
   {
     id:4,
@@ -98,6 +101,7 @@ const contest = [
     ],
     timing: "2024-12-22T00:00:00.000Z",
     img: "https://i.ibb.co/80MtHpm/cycle.jpg",
+    registered_users :[],
   },
   {
     id:5,
@@ -123,6 +127,7 @@ const contest = [
     ],
     timing: "2024-12-29T00:00:00.000Z",
     img: "https://i.ibb.co/80MtHpm/cycle.jpg",
+    registered_users :[],
   },
 ];
 

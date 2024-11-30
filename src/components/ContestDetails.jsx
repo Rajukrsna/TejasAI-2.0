@@ -4,13 +4,41 @@ import Modal from "./Modal";
 import ContestRegisterForm from "./ContestRegisterForm";
 import contest from "@/contest-details";
 import { useParams } from "next/navigation";
+import Link from "next/link";
+import { useAuth } from "@clerk/nextjs";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 const ContestDetails = () => {
+  const { userId } = useAuth();
+
   const params = useParams();
   const [selectedContest, setSelectedContest] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const contestId = params?.id;
+
+  const [registered, setRegistered] = useState(false);
+
   useEffect(() => {
-    const contestId = params.id;
+    const fetchUserDetails = async () => {
+      try {
+        const response = await axios.get(
+          `/api/contests/userCheck/${contestId}`
+        );
+        if (response.status == 200) {
+          console.log(response.data);
+          setRegistered(response.data);
+        } else {
+          console.log("error while getting");
+        }
+      } catch (error) {
+        console.log("error");
+      }
+    };
+    fetchUserDetails();
+  }, [contestId]);
+
+  useEffect(() => {
     const matchingContest = contest.find((c) => c.id == parseInt(contestId));
     setSelectedContest(matchingContest || null);
   }, [params]);
@@ -61,6 +89,9 @@ const ContestDetails = () => {
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
 
+  const contestStartDate = new Date(contestTime);
+  const hasStarted = new Date() >= contestStartDate;
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <div className="w-full h-[84vh]">
@@ -91,12 +122,45 @@ const ContestDetails = () => {
                 <p>Secs</p>
               </div>
             </div>
-            <button
-              className="bg-green-500 text-white px-[20px] py-[10px] rounded-lg my-[20px]"
-              onClick={handleOpenModal}
-            >
-              Register Here!
-            </button>
+            <div className="flex gap-[20px]">
+              {/* Conditionally render the "Go to Live" button */}
+
+              <button
+                className={`bg-orange-500 ${
+                  !hasStarted || !registered
+                    ? "cursor-not-allowed bg-gray-400"
+                    : "cursor-pointer"
+                } py-[10px] px-[20px] rounded-lg my-[20px] text-white`}
+                disabled={!hasStarted || !registered}
+              >
+                <Link
+                  href={
+                    hasStarted && registered
+                      ? `/contest-page/${contestId}/`
+                      : "#"
+                  }
+                  passHref
+                  className={`${
+                    !hasStarted || !registered
+                      ? "cursor-not-allowed"
+                      : "cursor-pointer"
+                  }`}
+                >
+                  Go to Live!
+                </Link>
+              </button>
+              <button
+                className={`text-white px-[20px] py-[10px] rounded-lg my-[20px] ${
+                  registered
+                    ? "bg-green-500 cursor-not-allowed"
+                    : "bg-green-500"
+                }`}
+                onClick={handleOpenModal}
+                disabled={registered}
+              >
+                {registered ? "Already Registered" : "Register Here!"}
+              </button>
+            </div>
           </div>
 
           {/* right side component  */}
@@ -170,7 +234,7 @@ const ContestDetails = () => {
           </div>
         </div>
         <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-          <ContestRegisterForm />
+          <ContestRegisterForm contestId={contestId} />
         </Modal>
       </div>
     </Suspense>
@@ -178,4 +242,3 @@ const ContestDetails = () => {
 };
 
 export default ContestDetails;
-

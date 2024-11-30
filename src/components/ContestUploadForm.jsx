@@ -4,7 +4,7 @@ import axios from "axios";
 import contest from "@/contest-details";
 import { toast } from "react-toastify";
 
-const ContestUploadForm = () => {
+const ContestUploadForm = ({ contestId, userId, updateScore }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [category, setCategory] = useState("");
   const [message, setMessage] = useState("");
@@ -73,9 +73,31 @@ const ContestUploadForm = () => {
       );
 
       if (response.status === 200) {
-        setMessage(response.data.message || "File uploaded successfully!");
-        setStatus("success");
-        showToast("success", "Points awarded!");
+        const updPayload = {// Assuming imgFile is already in the required format
+          category,
+          imagePreviewUrl,
+          fileName,
+          contestId,
+          userId,
+        };
+        const response = await axios.post("/api/contests/updateScore", updPayload, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        if(response.status==200){
+          updateScore((response.data.images.length)*5);
+          toast.success("Points rewarded")
+        }
+        // Log response
+        console.log("Server response:", response.data);
+        if (updateScore.status == 200) {
+          setMessage(response.data.message || "File uploaded successfully!");
+          setStatus("success");
+          showToast("success", "Points awarded!");
+        } else {
+          toast.error("Error updating Score");
+        }
       } else if (response.status === 400) {
         showToast("error", "Oops! Try other categories");
       }
@@ -133,8 +155,10 @@ const ContestUploadForm = () => {
             name="category"
             className="form-select my-2 block w-full border border-gray-300 rounded-md shadow-sm p-2"
             required
-            value={selectedOption} // Bind state to the select element
-            onChange={handleChange}
+            value={category} // Bind state to the select element
+            onChange={(e) => {
+              setCategory(e.target.value);
+            }}
           >
             <option value="" disabled>
               Select an option

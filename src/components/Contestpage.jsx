@@ -3,35 +3,69 @@ import { useState, useEffect } from "react";
 import { IoCloudUploadOutline } from "react-icons/io5";
 import Modal from "./Modal";
 import ContestUploadForm from "./ContestUploadForm";
+import { useParams } from "next/navigation";
+import { useAuth } from "@clerk/nextjs";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Contestpage = () => {
   const role = "user";
+  const { userId } = useAuth();
+  const params = useParams();
+  const contestId = params?.id;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
+  const [targetScore, setTargetScore] = useState(0);
 
-  const targetScore = 200;
-  const [score, setScore] = useState(0); // Initial score is 0
+  useEffect(() => {
+    const fetchScore = async () => {
+      try {
+        const response = await axios.get("/api/contest/get_details", {
+          params: {
+            contestid: contestId,
+            userId: userId,
+          },
+        });
+        if (response.status == 200) {
+          setTargetScore(response.data);
+        } else {
+          toast.error("Error fetching score");
+        }
+      } catch (error) {
+        toast.error("Error while fetching server");
+      }
+    };
+    if (contestId && userId) {
+      fetchScore();
+    }
+  }, [contestId, userId]);
+
+  const [score, setScore] = useState(0);
 
   useEffect(() => {
     let start = 0;
     const end = targetScore;
-    const duration = 2000; // Duration of the animation in milliseconds
-    const incrementTime = 50; // Interval time for each increment (in ms)
-    const step = Math.ceil((end - start) / (duration / incrementTime)); // The amount to increment in each step
+    const duration = 1000;
+    const incrementTime = 50;
+    const step = Math.ceil((end - start) / (duration / incrementTime));
 
     const interval = setInterval(() => {
       start += step;
       if (start >= end) {
-        clearInterval(interval); // Stop the animation once it reaches the target score
-        setScore(end); // Set final score
+        clearInterval(interval);
+        setScore(end);
       } else {
-        setScore(start); // Update score during animation
+        setScore(start);
       }
     }, incrementTime);
 
     return () => clearInterval(interval); // Cleanup interval on component unmount
   }, []);
+
+  function updateScore(scores) {
+    setScore(scores);
+  }
 
   return (
     <>
@@ -73,7 +107,7 @@ const Contestpage = () => {
           </div>
         </div>
         <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-          <ContestUploadForm />
+          <ContestUploadForm contestId={contestId} userId={userId} updateScore={updateScore}/>
         </Modal>
       </div>
     </>
