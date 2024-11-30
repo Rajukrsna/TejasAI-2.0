@@ -1,5 +1,6 @@
 const contest = [
   {
+    id: 1,
     title: "Plant & Prove",
     what_to_do: "Upload proof of planting trees.",
     obj: "Planting trees is one of the most effective ways to combat climate change, as trees act as natural carbon sinks, absorbing CO2 from the atmosphere. By engaging users in tree planting, this contest helps reduce greenhouse gas levels while also improving biodiversity, preventing soil erosion, and providing habitats for wildlife. Participating in this contest not only benefits the environment but also fosters a personal connection to nature, inspiring long-term sustainable behavior.",
@@ -24,6 +25,7 @@ const contest = [
     img: "https://i.ibb.co/80MtHpm/cycle.jpg",
   },
   {
+    id:2,
     title: "Zero-Waste Challenge",
     what_to_do:
       "Show your efforts to reduce waste (e.g., composting, recycling, or reusing items).",
@@ -49,6 +51,7 @@ const contest = [
     img: "https://i.ibb.co/80MtHpm/cycle.jpg",
   },
   {
+    id:3,
     title: "Bike for the Planet",
     what_to_do: "Show proof of biking instead of driving a car.",
     obj: "Transportation is one of the largest contributors to carbon emissions globally. By promoting cycling, this contest aims to reduce reliance on fossil fuels, lower CO2 emissions, and improve air quality. Biking is also a great way to improve personal health and reduce urban congestion, creating a win-win for individuals and the planet. By participating, users actively contribute to mitigating climate change and spreading awareness about eco-friendly transportation options.",
@@ -73,6 +76,7 @@ const contest = [
     img: "https://i.ibb.co/80MtHpm/cycle.jpg",
   },
   {
+    id:4,
     title: "Eco-Cooking Superstar",
     what_to_do:
       "Share your eco-friendly meals (plant-based or zero-waste cooking).",
@@ -96,6 +100,7 @@ const contest = [
     img: "https://i.ibb.co/80MtHpm/cycle.jpg",
   },
   {
+    id:5,
     title: "Switch & Save Energy",
     what_to_do:
       "Show actions taken to save electricity at home (e.g., using LED bulbs, switching off unused devices).",

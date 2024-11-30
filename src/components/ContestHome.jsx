@@ -113,9 +113,9 @@ const ContestHome = () => {
           {filteredContests.map((contest, index) => (
           <ContestCard
             key={index}
+            id={contest.id}
             img={contest.img}
             name={contest.title}
-            // registeredBy={contest.registeredBy}
             description={contest.obj}
             short={contest.what_to_do}
             time={contest.timing}
