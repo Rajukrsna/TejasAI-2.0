@@ -86,7 +86,7 @@ export async function POST(req) {
     return NextResponse.json({
       message: "File uploaded successfully",
       uploadImage
-    });
+    }, {status: 200});
   } catch (error) {
     return NextResponse.json(
       { message: "Error while processing the data" },

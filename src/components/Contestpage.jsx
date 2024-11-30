@@ -64,6 +64,11 @@ const Contestpage = () => {
     setScore(scores);
   }
 
+  const handleCloseModel = () => {
+    setIsModalOpen(false); // This will close the modal
+  };
+  
+
   return (
     <>
       <div className="w-full flex flex-col">
@@ -120,6 +125,7 @@ const Contestpage = () => {
             contestId={contestId}
             userId={userId}
             updateScore={updateScore}
+            handleCloseModel={handleCloseModel}
           />
         </Modal>
       </div>
