@@ -6,6 +6,7 @@ import os from "os";
 import path from "path";
 import axios from "axios";
 import UploadImg from "@/models/UploadImage/Schema";
+import User from "@/models/User/Schema";
 
 const s3 = new S3Client({
   region: "us-east-1",
@@ -65,10 +66,6 @@ export async function POST(req) {
 
     await connectToDb();
     const imagePath = s3ImageUrl;
-    console.log("out image path is", imagePath);
-
-    console.log("contest id", contestId);
-    console.log("clerk id", userId);
     let uploadImage = await UploadImg.findOne({
       clerkId: userId,
       contestId: String(contestId), // Convert contestId to string
@@ -83,7 +80,9 @@ export async function POST(req) {
     }
     uploadImage.images.push(imagePath);
     await uploadImage.save();
-    console.log("image path saved success");
+    const userPoint = await User.findOne({clerkId: userId});
+    userPoint.contestPoints = uploadImage.images.length || 0
+    await userPoint.save();
     return NextResponse.json({
       message: "File uploaded successfully",
       uploadImage

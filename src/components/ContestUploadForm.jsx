@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import contest from "@/contest-details";
 import { toast } from "react-toastify";
@@ -73,21 +73,25 @@ const ContestUploadForm = ({ contestId, userId, updateScore }) => {
       );
 
       if (response.status === 200) {
-        const updPayload = {// Assuming imgFile is already in the required format
+        const updPayload = {
           category,
           imagePreviewUrl,
           fileName,
           contestId,
           userId,
         };
-        const response = await axios.post("/api/contests/updateScore", updPayload, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        if(response.status==200){
-          updateScore((response.data.images.length)*5);
-          toast.success("Points rewarded")
+        const response = await axios.post(
+          "/api/contests/updateScore",
+          updPayload,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (response.status == 200) {
+          updateScore(response.data.images.length * 5);
+          toast.success("Points rewarded");
         }
         // Log response
         console.log("Server response:", response.data);
@@ -109,11 +113,12 @@ const ContestUploadForm = ({ contestId, userId, updateScore }) => {
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Error connecting to the server.";
-      showToast("error", errorMessage);
+      // showToast("error", errorMessage);
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <>
       <div>

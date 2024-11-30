@@ -1,5 +1,6 @@
 "use client";
 
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 
 export default function Leaderboard() {
@@ -30,7 +31,6 @@ export default function Leaderboard() {
 
     fetchLeaderboardData();
   }, []);
-
   if (loading) {
     return <div className="text-center p-10">Loading leaderboard...</div>;
   }
@@ -69,62 +69,6 @@ export default function Leaderboard() {
           style={{ animationDelay: "1s" }}
         ></span>
       </div>
-
-      {/* <table className="table-auto w-full mt-4 border-collapse animate__animated animate__fadeIn">
-        <thead>
-          <tr>
-            <th className="px-4 py-2 border">Rank</th>
-            <th className="px-4 py-2 border">Username</th>
-            <th className="px-4 py-2 border">Points</th>
-            <th className="px-4 py-2 border">Progress</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map((user, index) => {
-            // Calculate the percentage for each user's points
-            const percentage = (user.points / maxPoints) * 100;
-
-            return (
-              <tr
-                key={user.username || index}
-                className={`${index === 0 ? "animate__animated animate__flash" : ""}`}
-              >
-                <td className="px-4 py-2 border">
-                  {index + 1}
-                  <span className="emoji">
-                    {index === 0
-                      ? "🥇"
-                      : index === 1
-                      ? "🥈"
-                      : index === 2
-                      ? "🥉"
-                      : ""}
-                  </span>
-                </td>
-                <td className="px-4 py-2 border">{user.username || "Anonymous"}</td>
-                <td className="px-4 py-2 border">{user.points || 0}</td>
-                <td className="px-4 py-2 border">
-                  <div className="w-full bg-gray-200 h-2 rounded-full">
-                    <div
-                      className="h-2 rounded-full"
-                      style={{
-                        width: `${percentage}%`,
-                        backgroundColor:
-                          percentage > 80
-                            ? "#4CAF50"
-                            : percentage > 50
-                            ? "#FFC107"
-                            : "#F44336",
-                      }}
-                    />
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table> */}
-
       <table className="table-auto w-full mt-4 border-collapse animate__animated animate__fadeIn shadow-lg">
         <thead>
           <tr className="bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-white">
@@ -139,6 +83,9 @@ export default function Leaderboard() {
             </th>
             <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-sm uppercase tracking-wider">
               Progress
+            </th>
+            <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-sm uppercase tracking-wider">
+              Contest Points
             </th>
           </tr>
         </thead>
@@ -186,6 +133,9 @@ export default function Leaderboard() {
                       }}
                     />
                   </div>
+                </td>
+                <td className="px-6 py-4 border-b border-gray-200 text-sm text-gray-700">
+                  {user.contestPoints || 0}
                 </td>
               </tr>
             );

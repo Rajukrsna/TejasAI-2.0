@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema(
     points: { type: Number, default: 0 },
     logActivity: { type: Boolean, default: false },
     registered_contests: [Number],
+    contestPoints: { type: Number },
   },
   { timestamps: true }
 );

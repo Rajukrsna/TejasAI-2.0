@@ -6,14 +6,15 @@ import { toast } from "react-toastify";
 
 const ContestHome = () => {
   const [selectedCategory, setSelectedCategory] = useState("Upcoming");
-  const [contests, setContests] = useState([]); // Ensure this is initialized as an array
+  const [contests, setContests] = useState([]);
+  const [filteredContests, setFilteredContests] = useState([]);
 
   useEffect(() => {
     const fetchContestDetails = async () => {
       try {
         const response = await axios.get("/api/contests/get-contests/");
         if (response.status === 200 && Array.isArray(response.data)) {
-          setContests(response.data); // Set contests only if the response is an array
+          setContests(response.data);
         } else {
           toast.error("Error while fetching contests");
         }
@@ -23,24 +24,52 @@ const ContestHome = () => {
     };
 
     fetchContestDetails();
-  }, []); // Run only once when the component mounts
+  }, []);
 
-  // Ensure contests is an array before using filter
-  const filteredContests = Array.isArray(contests) 
-    ? contests.filter((contest) => {
-        const contestDate = new Date(contest.timing).toDateString();
-        const today = new Date().toDateString();
-
-        if (selectedCategory === "Live") {
-          return contestDate === today;
-        } else if (selectedCategory === "Upcoming") {
-          return new Date(contest.timing) > new Date();
-        } else if (selectedCategory === "Registered") {
-          return contest.status === "Registered";
+  useEffect(() => {
+    const filterContests = async () => {
+      if (selectedCategory === "Registered") {
+        try {
+          const registeredContests = [];
+          for (const contest of contests) {
+            const isRegistered = await checkStatus(contest.id);
+            if (isRegistered) {
+              registeredContests.push(contest);
+            }
+          }
+          console.log(registeredContests);
+          setFilteredContests(registeredContests);
+        } catch (error) {
+          console.error("Error while filtering registered contests:", error);
         }
-        return false;
-      })
-    : []; // Return an empty array if contests is not an array
+      } else {
+        const today = new Date().toDateString();
+        const filtered = contests.filter((contest) => {
+          const contestDate = new Date(contest.timing).toDateString();
+
+          if (selectedCategory === "Live") {
+            return contestDate === today;
+          } else if (selectedCategory === "Upcoming") {
+            return new Date(contest.timing) > new Date();
+          }
+          return false;
+        });
+        setFilteredContests(filtered);
+      }
+    };
+
+    filterContests();
+  }, [selectedCategory, contests]);
+
+  const checkStatus = async (contestId) => {
+    try {
+      const response = await axios.get(`/api/contests/userCheck/${contestId}`);
+      return response.status === 200 && response.data;
+    } catch (error) {
+      console.error("Error checking user registration:", error);
+      return false;
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center mb-[60px] mt-[30px]">

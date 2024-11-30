@@ -17,18 +17,15 @@ const Contestpage = () => {
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
   const [targetScore, setTargetScore] = useState(0);
+  const [images, setImages] = useState("");
 
   useEffect(() => {
     const fetchScore = async () => {
       try {
-        const response = await axios.get("/api/contest/get_details", {
-          params: {
-            contestid: contestId,
-            userId: userId,
-          },
-        });
+        const response = await axios.get(`/api/contests/get_details/${userId}`);
         if (response.status == 200) {
-          setTargetScore(response.data);
+          setImages(response.data);
+          setTargetScore(response.data.length * 5);
         } else {
           toast.error("Error fetching score");
         }
@@ -61,7 +58,7 @@ const Contestpage = () => {
     }, incrementTime);
 
     return () => clearInterval(interval); // Cleanup interval on component unmount
-  }, []);
+  }, [targetScore]);
 
   function updateScore(scores) {
     setScore(scores);
@@ -80,13 +77,25 @@ const Contestpage = () => {
           <div className="w-[80%] bg-white rounded-lg shadow-xl m-[20px] p-[20px] flex flex-col justify-between">
             <div className="overflow-y-scroll h-[calc(100vh-200px)]">
               <div className="space-y-4">
-                <p
-                  className={`p-5 rounded-md ${
-                    role === "user" ? "text-right" : "text-left"
-                  }`}
-                >
-                  Hello all
-                </p>
+                {targetScore > 0 ? (
+                  <div>
+                    <p className="font-bold text-center text-3xl mb-[20px]">
+                      Uploaded Images
+                    </p>
+                    {images.map((image, index) => (
+                      <div className="my-[20px]" key={index}>
+                        <img
+                          key={index}
+                          src={image}
+                          alt={`Uploaded ${index + 1}`}
+                          className="w-full h-auto rounded-md my-2"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p>Nothing to Show. Upload images</p>
+                )}
               </div>
             </div>
             <div className="mt-4">
@@ -107,7 +116,11 @@ const Contestpage = () => {
           </div>
         </div>
         <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-          <ContestUploadForm contestId={contestId} userId={userId} updateScore={updateScore}/>
+          <ContestUploadForm
+            contestId={contestId}
+            userId={userId}
+            updateScore={updateScore}
+          />
         </Modal>
       </div>
     </>
