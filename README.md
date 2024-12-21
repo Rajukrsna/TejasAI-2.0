@@ -34,6 +34,7 @@ Tejas AI is an innovative application designed to help users **track, reduce, an
 
 ---
 ![Tech Stack](./screenshot/track4.png)
+![Features Overview](./screenshot/track5.png)
 
 ## 🚀 **Getting Started**
 ### 🔧 **Installation**
