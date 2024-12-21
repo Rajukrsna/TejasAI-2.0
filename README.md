@@ -1,4 +1,46 @@
-<<<<<<< HEAD
+# 🌿 **Tejas AI - Gamified CO2 Footprint Tracker**
+
+![Banner](./screenshot/track1.png)
+
+## 🌟 **Project Overview**
+Tejas AI is an innovative application designed to help users **track, reduce, and gamify their carbon footprint reduction efforts**. By leveraging **AI-powered insights** and **gamification techniques**, we aim to make sustainability both **fun and impactful**! 🌍✨
+
+---
+
+## 💡 **Features**
+![Features Overview](./screenshot/track2.png)
+
+- 📊 **Dashboard**: Displays **real-time CO2 emissions vs. reductions** with actionable insights.
+- 🖼️ **Image Recognition**: Upload images to validate eco-friendly actions and earn **reward points**.
+- 🤖 **AI-Powered Suggestions**: Get tailored recommendations to reduce your carbon footprint.
+- 🏆 **Leaderboard**: Compete with other users and aim to top the chart of eco-warriors!
+- 🌱 **Gamified Experience**: Earn rewards and track your progress in an engaging way.
+
+---
+
+## 🛠️ **Tech Stack**
+![Tech Stack](./screenshot/track3.png)
+
+- **Frontend**: **Next.js** (with [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) for font optimization)
+- **Backend**: Node.js, Express.js
+- **Database**: MongoDB
+- **Authentication**: **AWS Cognito** for user authentication
+- **Notifications**: **AWS SNS** for sending SMS notifications
+- **AI Services**:
+  - **Meta-Llama-3.1-405B-Instruct**: For chatbot and eco-friendly suggestions
+  - **Llama-3.2-90B-Vision-Instruct**: For analyzing CO2 emissions from user-uploaded images
+  - **AWS Rekognition**: For analyzing the image and giving reward points to the user
+  - **AWS Lambda**: To integrate with **Cohere Foundation's LLM model**
+
+---
+![Tech Stack](./screenshot/track4.png)
+
+## 🚀 **Getting Started**
+### 🔧 **Installation**
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/tejas-ai.git
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
